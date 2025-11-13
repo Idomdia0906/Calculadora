@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const simpleCard = document.getElementById("tasaSimpleCard");
   const completaCard = document.getElementById("tasaCompletaCard");
+  const explicacionTasaCompleta = document.getElementById("explicacionTasaCompleta");
 
   // --- Valores iniciales ---
   cantidadInput.value = "10000";
@@ -44,52 +45,67 @@ document.addEventListener("DOMContentLoaded", () => {
   ingresosInput.value = "";
   deudasInput.value = "";
 
-  // Ocultamos las tarjetas de tasa de esfuerzo al inicio
+  // Ocultar tarjetas al inicio
   if (simpleCard) simpleCard.style.display = "none";
   if (completaCard) completaCard.style.display = "none";
 
   // --- Helpers ---
-  function limpiarTextoNumero(str) {
-    // admite . y , como separadores decimales
-    return str.replace(/[^0-9.,]/g, "").replace(",", ".");
+  // -----------------------------------------
+  // FORMATEADOR CON PUNTOS (SOLO MILES)
+  // -----------------------------------------
+  function formatearMiles(numero) {
+    return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
+  // -----------------------------------------
+  // LIMPIAR → QUITAR PUNTOS Y COMAS
+  // -----------------------------------------
+  function limpiarNumero(str) {
+    if (!str) return 0;
+    return parseInt(str.replace(/[^\d]/g, "")) || 0;
+  }
+
+  // -----------------------------------------
+  // OBTENER NÚMERO REAL DESDE EL INPUT
+  // -----------------------------------------
   function numeroSeguroFromInput(inputEl) {
-    const limpio = limpiarTextoNumero(inputEl.value || "");
-    if (limpio === "" || isNaN(limpio)) return 0;
-    return parseFloat(limpio);
+    return limpiarNumero(inputEl.value);
   }
 
-  function formatearEuros(valor) {
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-    }).format(valor);
+  // -----------------------------------------
+  // ACTUALIZAR INPUT CON FORMATO
+  // -----------------------------------------
+  function actualizarInput(input, valor) {
+    const numeroLimpio = limpiarNumero(valor.toString());
+    input.value = formatearMiles(numeroLimpio);
   }
 
+  // -----------------------------------------
+  // BOTONES + Y –
+  // -----------------------------------------
   function incrementar(campo) {
     if (campo === "cantidad") {
-      const valor = numeroSeguroFromInput(cantidadInput) || 0;
-      cantidadInput.value = String(Math.max(0, valor + 1000));
+      const valor = numeroSeguroFromInput(cantidadInput);
+      actualizarInput(cantidadInput, valor + 1000);
     } else if (campo === "plazo") {
-      const valor = numeroSeguroFromInput(plazoInput) || 0;
-      plazoInput.value = String(Math.max(1, valor + 1));
+      const valor = numeroSeguroFromInput(plazoInput);
+      plazoInput.value = valor + 1;
     } else if (campo === "interes") {
-      const valor = numeroSeguroFromInput(interesInput) || 0;
-      interesInput.value = (Math.max(0, valor + 0.1)).toFixed(1);
+      const valor = parseFloat(interesInput.value.replace(",", "."));
+      interesInput.value = (valor + 0.1).toFixed(1);
     }
   }
 
   function decrementar(campo) {
     if (campo === "cantidad") {
-      const valor = numeroSeguroFromInput(cantidadInput) || 0;
-      cantidadInput.value = String(Math.max(0, valor - 1000));
+      const valor = numeroSeguroFromInput(cantidadInput);
+      actualizarInput(cantidadInput, Math.max(0, valor - 1000));
     } else if (campo === "plazo") {
-      const valor = numeroSeguroFromInput(plazoInput) || 0;
-      plazoInput.value = String(Math.max(1, valor - 1));
+      const valor = numeroSeguroFromInput(plazoInput);
+      plazoInput.value = Math.max(1, valor - 1);
     } else if (campo === "interes") {
-      const valor = numeroSeguroFromInput(interesInput) || 0;
-      interesInput.value = (Math.max(0, valor - 0.1)).toFixed(1);
+      const valor = parseFloat(interesInput.value.replace(",", "."));
+      interesInput.value = Math.max(0, valor - 0.1).toFixed(1);
     }
   }
 
@@ -127,7 +143,6 @@ document.addEventListener("DOMContentLoaded", () => {
       intereses = totalPagado - P;
     }
 
-    // Mostrar resultados préstamo
     cuotaMensualEl.textContent = formatearEuros(cuota);
     interesesTotalesEl.textContent = formatearEuros(intereses);
     costeTotalEl.textContent = formatearEuros(totalPagado);
@@ -150,7 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
     resultadosSection.classList.add("visible");
     resultadosSection.setAttribute("aria-hidden", "false");
 
-    // Devuelvo la cuota para usarla en la tasa de esfuerzo
     return cuota;
   }
 
@@ -166,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function colorRiesgo(tasa) {
-    if (tasa === 0) return "#6b7280"; // gris si no hay datos
+    if (tasa === 0) return "#6b7280";
     if (tasa < 30) return "var(--verde-esfuerzo)";
     if (tasa < 40) return "var(--amarillo-esfuerzo)";
     if (tasa < 50) return "var(--naranja-esfuerzo)";
@@ -185,66 +199,47 @@ document.addEventListener("DOMContentLoaded", () => {
     const ingresos = numeroSeguroFromInput(ingresosInput);
     const deudas = numeroSeguroFromInput(deudasInput);
 
-    // Si no hay ingresos → ocultar ambas tarjetas
+    // Sin ingresos → no mostrar nada
     if (!ingresos || ingresos <= 0) {
-      if (simpleCard) simpleCard.style.display = "none";
-      if (completaCard) completaCard.style.display = "none";
-
-      if (tasaSimpleEl) {
-        tasaSimpleEl.textContent = "0 %";
-        tasaSimpleEl.style.color = "#6b7280";
-      }
-      if (tasaCompletaEl) {
-        tasaCompletaEl.textContent = "0 %";
-        tasaCompletaEl.style.color = "#6b7280";
-      }
-      if (textoRiesgoEl) {
-        textoRiesgoEl.textContent = "";
-      }
+      simpleCard.style.display = "none";
+      completaCard.style.display = "none";
+      tasaSimpleEl.textContent = "0 %";
+      tasaCompletaEl.textContent = "0 %";
+      textoRiesgoEl.textContent = "";
+      explicacionTasaCompleta.textContent = "";
       return;
     }
 
-    // Si hay ingresos pero no deudas → solo tasa simple
+    // Solo ingresos → mostrar solo simple
     if (ingresos > 0 && (!deudas || deudas <= 0)) {
       const tasaSimple = calcularTasaSimple(cuota, ingresos);
-      const tSimpleRed = tasaSimple.toFixed(1);
+      simpleCard.style.display = "block";
+      completaCard.style.display = "none";
 
-      if (simpleCard) simpleCard.style.display = "block";
-      if (completaCard) completaCard.style.display = "none";
-
-      if (tasaSimpleEl) {
-        tasaSimpleEl.textContent = `${tSimpleRed} %`;
-        tasaSimpleEl.style.color = colorRiesgo(tasaSimple);
-      }
-      if (textoRiesgoEl) {
-        textoRiesgoEl.textContent = "Introduce tus deudas para mostrar el cálculo completo.";
-      }
+      tasaSimpleEl.textContent = `${tasaSimple.toFixed(1)} %`;
+      tasaSimpleEl.style.color = colorRiesgo(tasaSimple);
+      textoRiesgoEl.textContent = "Introduce deudas para calcular la tasa completa";
+      explicacionTasaCompleta.textContent = "";
       return;
     }
 
-    // Si hay ingresos y deudas → mostrar ambas tarjetas
+    // Ingresos + deudas → mostrar ambas
     const tasaSimple = calcularTasaSimple(cuota, ingresos);
     const tasaCompleta = calcularTasaCompleta(cuota, ingresos, deudas);
 
-    const tSimpleRed = tasaSimple.toFixed(1);
-    const tCompletaRed = tasaCompleta.toFixed(1);
+    simpleCard.style.display = "block";
+    completaCard.style.display = "block";
 
-    if (simpleCard) simpleCard.style.display = "block";
-    if (completaCard) completaCard.style.display = "block";
+    tasaSimpleEl.textContent = `${tasaSimple.toFixed(1)} %`;
+    tasaSimpleEl.style.color = colorRiesgo(tasaSimple);
 
-    if (tasaSimpleEl) {
-      tasaSimpleEl.textContent = `${tSimpleRed} %`;
-      tasaSimpleEl.style.color = colorRiesgo(tasaSimple);
-    }
+    tasaCompletaEl.textContent = `${tasaCompleta.toFixed(1)} %`;
+    tasaCompletaEl.style.color = colorRiesgo(tasaCompleta);
 
-    if (tasaCompletaEl) {
-      tasaCompletaEl.textContent = `${tCompletaRed} %`;
-      tasaCompletaEl.style.color = colorRiesgo(tasaCompleta);
-    }
+    textoRiesgoEl.textContent = textoRiesgo(tasaCompleta);
 
-    if (textoRiesgoEl) {
-      textoRiesgoEl.textContent = textoRiesgo(tasaCompleta);
-    }
+    explicacionTasaCompleta.textContent =
+      `(${formatearMiles(deudas)} € de deudas + ${formatearMiles(Math.round(cuota))} € de cuota) / ${formatearMiles(ingresos)} € de ingresos`;
   }
 
   function limpiarTodo() {
@@ -258,29 +253,23 @@ document.addEventListener("DOMContentLoaded", () => {
     resultadosSection.classList.remove("visible");
     resultadosSection.setAttribute("aria-hidden", "true");
 
-    if (simpleCard) simpleCard.style.display = "none";
-    if (completaCard) completaCard.style.display = "none";
+    simpleCard.style.display = "none";
+    completaCard.style.display = "none";
 
-    if (tasaSimpleEl) {
-      tasaSimpleEl.textContent = "0 %";
-      tasaSimpleEl.style.color = "#6b7280";
-    }
-    if (tasaCompletaEl) {
-      tasaCompletaEl.textContent = "0 %";
-      tasaCompletaEl.style.color = "#6b7280";
-    }
-    if (textoRiesgoEl) {
-      textoRiesgoEl.textContent = "";
-    }
+    tasaSimpleEl.textContent = "0 %";
+    tasaSimpleEl.style.color = "#6b7280";
+    tasaCompletaEl.textContent = "0 %";
+    tasaCompletaEl.style.color = "#6b7280";
+    textoRiesgoEl.textContent = "";
+    explicacionTasaCompleta.textContent = "";
   }
 
-  // --- Eventos de inputs para limpiar caracteres raros ---
+  // --- Formateo automático de inputs ---
   [cantidadInput, plazoInput, interesInput, ingresosInput, deudasInput].forEach(
     (input) => {
-      input.addEventListener("input", (e) => {
-        const el = e.target;
-        const cleaned = limpiarTextoNumero(el.value);
-        el.value = cleaned;
+      input.addEventListener("input", () => {
+        if (input === interesInput) return; 
+        actualizarInput(input, input.value);
       });
     }
   );
@@ -293,12 +282,10 @@ document.addEventListener("DOMContentLoaded", () => {
   interesMas.addEventListener("click", () => incrementar("interes"));
   interesMenos.addEventListener("click", () => decrementar("interes"));
 
-  // --- Botones Calcular / Limpiar ---
+  // --- Calcular / Limpiar ---
   calcularBtn.addEventListener("click", () => {
     const cuota = calcularPrestamo();
-    if (cuota !== null) {
-      calcularTasaEsfuerzo(cuota);
-    }
+    if (cuota !== null) calcularTasaEsfuerzo(cuota);
   });
 
   limpiarBtn.addEventListener("click", limpiarTodo);
