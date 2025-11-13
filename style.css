@@ -9,6 +9,10 @@
   --primary-soft: #dbeafe;
   --secondary: #0f766e;
   --secondary-soft: #ccfbf1;
+  --verde-esfuerzo: #16A34A;
+  --amarillo-esfuerzo: #CA8A04;
+  --naranja-esfuerzo: #EA580C;
+  --rojo-esfuerzo: #DC2626;
   --radius-card: 20px;
   --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
@@ -511,4 +515,9 @@ body {
   .footer-info p {
     font-size: 0.95rem;
   }
+#tasaSimpleCard,
+#tasaCompletaCard {
+  display: none;
+}
+
 }

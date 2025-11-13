@@ -1,8 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // --- Referencias a elementos del DOM ---
   const cantidadInput = document.getElementById("cantidad");
   const plazoInput = document.getElementById("plazo");
   const interesInput = document.getElementById("interes");
   const tipoPlazoSelect = document.getElementById("tipoPlazo");
+
+  const ingresosInput = document.getElementById("ingresos");
+  const deudasInput = document.getElementById("deudas");
 
   const cantidadMenos = document.getElementById("cantidadMenos");
   const cantidadMas = document.getElementById("cantidadMas");
@@ -25,16 +29,35 @@ document.addEventListener("DOMContentLoaded", () => {
   const mesesTotalesTextoEl = document.getElementById("mesesTotalesTexto");
   const interesesTotalesTextoEl = document.getElementById("interesesTotalesTexto");
 
-  let tipoPlazo = "años";
+  const tasaSimpleEl = document.getElementById("tasaSimpleValor");
+  const tasaCompletaEl = document.getElementById("tasaCompletaValor");
+  const textoRiesgoEl = document.getElementById("textoRiesgo");
 
-  // Valores iniciales como en tu Home.tsx
+  const simpleCard = document.getElementById("tasaSimpleCard");
+  const completaCard = document.getElementById("tasaCompletaCard");
+
+  // --- Valores iniciales ---
   cantidadInput.value = "10000";
   plazoInput.value = "5";
   interesInput.value = "3.5";
   tipoPlazoSelect.value = "años";
+  ingresosInput.value = "";
+  deudasInput.value = "";
 
-  function validarNumero(valor) {
-    return valor.replace(/[^0-9.]/g, "");
+  // Ocultamos las tarjetas de tasa de esfuerzo al inicio
+  if (simpleCard) simpleCard.style.display = "none";
+  if (completaCard) completaCard.style.display = "none";
+
+  // --- Helpers ---
+  function limpiarTextoNumero(str) {
+    // admite . y , como separadores decimales
+    return str.replace(/[^0-9.,]/g, "").replace(",", ".");
+  }
+
+  function numeroSeguroFromInput(inputEl) {
+    const limpio = limpiarTextoNumero(inputEl.value || "");
+    if (limpio === "" || isNaN(limpio)) return 0;
+    return parseFloat(limpio);
   }
 
   function formatearEuros(valor) {
@@ -46,50 +69,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function incrementar(campo) {
     if (campo === "cantidad") {
-      const valor = parseFloat(cantidadInput.value) || 0;
+      const valor = numeroSeguroFromInput(cantidadInput) || 0;
       cantidadInput.value = String(Math.max(0, valor + 1000));
     } else if (campo === "plazo") {
-      const valor = parseFloat(plazoInput.value) || 0;
+      const valor = numeroSeguroFromInput(plazoInput) || 0;
       plazoInput.value = String(Math.max(1, valor + 1));
     } else if (campo === "interes") {
-      const valor = parseFloat(interesInput.value) || 0;
+      const valor = numeroSeguroFromInput(interesInput) || 0;
       interesInput.value = (Math.max(0, valor + 0.1)).toFixed(1);
     }
   }
 
   function decrementar(campo) {
     if (campo === "cantidad") {
-      const valor = parseFloat(cantidadInput.value) || 0;
+      const valor = numeroSeguroFromInput(cantidadInput) || 0;
       cantidadInput.value = String(Math.max(0, valor - 1000));
     } else if (campo === "plazo") {
-      const valor = parseFloat(plazoInput.value) || 0;
+      const valor = numeroSeguroFromInput(plazoInput) || 0;
       plazoInput.value = String(Math.max(1, valor - 1));
     } else if (campo === "interes") {
-      const valor = parseFloat(interesInput.value) || 0;
+      const valor = numeroSeguroFromInput(interesInput) || 0;
       interesInput.value = (Math.max(0, valor - 0.1)).toFixed(1);
     }
   }
 
+  // --- Cálculo del préstamo ---
   function calcularPrestamo() {
-    const P = parseFloat(cantidadInput.value);
-    const tasaAnual = parseFloat(interesInput.value);
-    const plazoValor = parseFloat(plazoInput.value);
+    const P = numeroSeguroFromInput(cantidadInput);
+    const tasaAnual = numeroSeguroFromInput(interesInput);
+    const plazoValor = numeroSeguroFromInput(plazoInput);
+    const tipoPlazo = tipoPlazoSelect.value;
 
     if (!P || P <= 0) {
-      alert("Por favor, introduce una cantidad válida");
-      return;
+      alert("Por favor, introduce una cantidad válida.");
+      return null;
     }
     if (isNaN(tasaAnual) || tasaAnual < 0) {
-      alert("Por favor, introduce un interés válido");
-      return;
+      alert("Por favor, introduce un interés válido.");
+      return null;
     }
     if (!plazoValor || plazoValor <= 0) {
-      alert("Por favor, introduce un plazo válido");
-      return;
+      alert("Por favor, introduce un plazo válido.");
+      return null;
     }
 
     const n = tipoPlazo === "años" ? plazoValor * 12 : plazoValor;
-
     let cuota, totalPagado, intereses;
 
     if (tasaAnual === 0) {
@@ -103,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
       intereses = totalPagado - P;
     }
 
-    // Mostrar resultados
+    // Mostrar resultados préstamo
     cuotaMensualEl.textContent = formatearEuros(cuota);
     interesesTotalesEl.textContent = formatearEuros(intereses);
     costeTotalEl.textContent = formatearEuros(totalPagado);
@@ -111,8 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
     cantidadSolicitadaEl.textContent = formatearEuros(P);
     interesAnualEl.textContent = `${tasaAnual}%`;
 
-    const mesesTotales = tipoPlazo === "años" ? plazoValor * 12 : plazoValor;
-    plazoTotalTextoEl.textContent = `${plazoValor} ${tipoPlazo} (${mesesTotales} meses)`;
+    const mesesTotales = n;
+    const textoPlazo =
+      tipoPlazo === "años"
+        ? `${plazoValor} años (${mesesTotales} meses)`
+        : `${plazoValor} meses`;
+
+    plazoTotalTextoEl.textContent = textoPlazo;
 
     cuotaMensualTextoEl.textContent = ` ${formatearEuros(cuota)} `;
     mesesTotalesTextoEl.textContent = ` ${mesesTotales} meses `;
@@ -120,36 +149,143 @@ document.addEventListener("DOMContentLoaded", () => {
 
     resultadosSection.classList.add("visible");
     resultadosSection.setAttribute("aria-hidden", "false");
+
+    // Devuelvo la cuota para usarla en la tasa de esfuerzo
+    return cuota;
   }
 
-  function limpiarDatos() {
+  // --- Tasa de esfuerzo ---
+  function calcularTasaSimple(cuota, ingresos) {
+    if (ingresos <= 0 || cuota <= 0) return 0;
+    return (cuota / ingresos) * 100;
+  }
+
+  function calcularTasaCompleta(cuota, ingresos, deudas) {
+    if (ingresos <= 0 || cuota <= 0) return 0;
+    return ((deudas + cuota) / ingresos) * 100;
+  }
+
+  function colorRiesgo(tasa) {
+    if (tasa === 0) return "#6b7280"; // gris si no hay datos
+    if (tasa < 30) return "var(--verde-esfuerzo)";
+    if (tasa < 40) return "var(--amarillo-esfuerzo)";
+    if (tasa < 50) return "var(--naranja-esfuerzo)";
+    return "var(--rojo-esfuerzo)";
+  }
+
+  function textoRiesgo(tasa) {
+    if (tasa === 0) return "Introduce ingresos y deudas para evaluar tu tasa de esfuerzo.";
+    if (tasa < 30) return "Nivel de endeudamiento saludable.";
+    if (tasa < 40) return "Capacidad aceptable. Se recomienda analizar estabilidad laboral.";
+    if (tasa < 50) return "Riesgo elevado. Este préstamo puede comprometer tu economía.";
+    return "Riesgo MUY ALTO. No se recomienda asumir este préstamo.";
+  }
+
+  function calcularTasaEsfuerzo(cuota) {
+    const ingresos = numeroSeguroFromInput(ingresosInput);
+    const deudas = numeroSeguroFromInput(deudasInput);
+
+    // Si no hay ingresos → ocultar ambas tarjetas
+    if (!ingresos || ingresos <= 0) {
+      if (simpleCard) simpleCard.style.display = "none";
+      if (completaCard) completaCard.style.display = "none";
+
+      if (tasaSimpleEl) {
+        tasaSimpleEl.textContent = "0 %";
+        tasaSimpleEl.style.color = "#6b7280";
+      }
+      if (tasaCompletaEl) {
+        tasaCompletaEl.textContent = "0 %";
+        tasaCompletaEl.style.color = "#6b7280";
+      }
+      if (textoRiesgoEl) {
+        textoRiesgoEl.textContent = "";
+      }
+      return;
+    }
+
+    // Si hay ingresos pero no deudas → solo tasa simple
+    if (ingresos > 0 && (!deudas || deudas <= 0)) {
+      const tasaSimple = calcularTasaSimple(cuota, ingresos);
+      const tSimpleRed = tasaSimple.toFixed(1);
+
+      if (simpleCard) simpleCard.style.display = "block";
+      if (completaCard) completaCard.style.display = "none";
+
+      if (tasaSimpleEl) {
+        tasaSimpleEl.textContent = `${tSimpleRed} %`;
+        tasaSimpleEl.style.color = colorRiesgo(tasaSimple);
+      }
+      if (textoRiesgoEl) {
+        textoRiesgoEl.textContent = "Introduce tus deudas para mostrar el cálculo completo.";
+      }
+      return;
+    }
+
+    // Si hay ingresos y deudas → mostrar ambas tarjetas
+    const tasaSimple = calcularTasaSimple(cuota, ingresos);
+    const tasaCompleta = calcularTasaCompleta(cuota, ingresos, deudas);
+
+    const tSimpleRed = tasaSimple.toFixed(1);
+    const tCompletaRed = tasaCompleta.toFixed(1);
+
+    if (simpleCard) simpleCard.style.display = "block";
+    if (completaCard) completaCard.style.display = "block";
+
+    if (tasaSimpleEl) {
+      tasaSimpleEl.textContent = `${tSimpleRed} %`;
+      tasaSimpleEl.style.color = colorRiesgo(tasaSimple);
+    }
+
+    if (tasaCompletaEl) {
+      tasaCompletaEl.textContent = `${tCompletaRed} %`;
+      tasaCompletaEl.style.color = colorRiesgo(tasaCompleta);
+    }
+
+    if (textoRiesgoEl) {
+      textoRiesgoEl.textContent = textoRiesgo(tasaCompleta);
+    }
+  }
+
+  function limpiarTodo() {
     cantidadInput.value = "10000";
     plazoInput.value = "5";
     interesInput.value = "3.5";
-    tipoPlazo = "años";
     tipoPlazoSelect.value = "años";
+    ingresosInput.value = "";
+    deudasInput.value = "";
 
     resultadosSection.classList.remove("visible");
     resultadosSection.setAttribute("aria-hidden", "true");
+
+    if (simpleCard) simpleCard.style.display = "none";
+    if (completaCard) completaCard.style.display = "none";
+
+    if (tasaSimpleEl) {
+      tasaSimpleEl.textContent = "0 %";
+      tasaSimpleEl.style.color = "#6b7280";
+    }
+    if (tasaCompletaEl) {
+      tasaCompletaEl.textContent = "0 %";
+      tasaCompletaEl.style.color = "#6b7280";
+    }
+    if (textoRiesgoEl) {
+      textoRiesgoEl.textContent = "";
+    }
   }
 
-  // Eventos de inputs y botones
-  cantidadInput.addEventListener("input", (e) => {
-    e.target.value = validarNumero(e.target.value);
-  });
+  // --- Eventos de inputs para limpiar caracteres raros ---
+  [cantidadInput, plazoInput, interesInput, ingresosInput, deudasInput].forEach(
+    (input) => {
+      input.addEventListener("input", (e) => {
+        const el = e.target;
+        const cleaned = limpiarTextoNumero(el.value);
+        el.value = cleaned;
+      });
+    }
+  );
 
-  plazoInput.addEventListener("input", (e) => {
-    e.target.value = validarNumero(e.target.value);
-  });
-
-  interesInput.addEventListener("input", (e) => {
-    e.target.value = validarNumero(e.target.value);
-  });
-
-  tipoPlazoSelect.addEventListener("change", (e) => {
-    tipoPlazo = e.target.value;
-  });
-
+  // --- Eventos de botones + / - ---
   cantidadMas.addEventListener("click", () => incrementar("cantidad"));
   cantidadMenos.addEventListener("click", () => decrementar("cantidad"));
   plazoMas.addEventListener("click", () => incrementar("plazo"));
@@ -157,6 +293,13 @@ document.addEventListener("DOMContentLoaded", () => {
   interesMas.addEventListener("click", () => incrementar("interes"));
   interesMenos.addEventListener("click", () => decrementar("interes"));
 
-  calcularBtn.addEventListener("click", calcularPrestamo);
-  limpiarBtn.addEventListener("click", limpiarDatos);
+  // --- Botones Calcular / Limpiar ---
+  calcularBtn.addEventListener("click", () => {
+    const cuota = calcularPrestamo();
+    if (cuota !== null) {
+      calcularTasaEsfuerzo(cuota);
+    }
+  });
+
+  limpiarBtn.addEventListener("click", limpiarTodo);
 });
