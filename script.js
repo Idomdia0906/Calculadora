@@ -1,3 +1,5 @@
+// --- CALCULADORA DE PRÉSTAMOS by Ignacio Dominguez Diaz--- //
+
 document.addEventListener("DOMContentLoaded", () => {
   // --- Referencias a elementos del DOM ---
   const cantidadInput = document.getElementById("cantidad");
