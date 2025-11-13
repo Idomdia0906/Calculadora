@@ -50,6 +50,14 @@ document.addEventListener("DOMContentLoaded", () => {
   if (completaCard) completaCard.style.display = "none";
 
   // --- Helpers ---
+  // FORMATEAR EUROS CORRECTAMENTE
+  function formatearEuros(valor) {
+    if (isNaN(valor) || valor === null) return "0,00 €";
+    return valor
+      .toFixed(2)
+      .replace(".", ",")
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €";
+  }
   // -----------------------------------------
   // FORMATEADOR CON PUNTOS (SOLO MILES)
   // -----------------------------------------
@@ -112,8 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Cálculo del préstamo ---
   function calcularPrestamo() {
     const P = numeroSeguroFromInput(cantidadInput);
-    const tasaAnual = numeroSeguroFromInput(interesInput);
-    const plazoValor = numeroSeguroFromInput(plazoInput);
+    const tasaAnual = parseFloat(interesInput.value.replace(",", "."));
+    const plazoValor = parseInt(plazoInput.value.replace(/[^\d]/g, "")) || 0;
     const tipoPlazo = tipoPlazoSelect.value;
 
     if (!P || P <= 0) {
@@ -265,14 +273,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Formateo automático de inputs ---
-  [cantidadInput, plazoInput, interesInput, ingresosInput, deudasInput].forEach(
-    (input) => {
-      input.addEventListener("input", () => {
-        if (input === interesInput) return; 
-        actualizarInput(input, input.value);
-      });
-    }
-  );
+  [cantidadInput, ingresosInput, deudasInput].forEach((input) => {
+    input.addEventListener("input", () => {
+      actualizarInput(input, input.value);
+    });
+  });
 
   // --- Eventos de botones + / - ---
   cantidadMas.addEventListener("click", () => incrementar("cantidad"));
