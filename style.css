@@ -520,4 +520,48 @@ body {
   display: none;
 }
 
+/* =====================================================
+   AJUSTE DEL SELECT DE “AÑOS / MESES” PARA MÓVIL
+   ===================================================== */
+
+.select-wrapper-movil {
+  display: none; /* Oculto por defecto en PC */
+  margin-top: 0.7rem;
+}
+
+@media (max-width: 700px) {
+
+  /* Mostrar el SELECT debajo en móvil */
+  .select-wrapper-movil {
+    display: block;
+  }
+
+  /* Ocultar el select original dentro del row */
+  .field-row-plazo .select {
+    display: none;
+  }
+
+  /* Reducir tamaño de inputs en móvil */
+  .input {
+    height: 3.2rem;
+    font-size: 1.3rem;
+  }
+
+  .btn-square {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.6rem;
+  }
+
+  /* Evitar desbordamientos */
+  .field-row {
+    flex-wrap: wrap;
+  }
+
+  /* Mejor separación visual */
+  .field-row-plazo {
+    margin-bottom: 0.5rem;
+  }
+}
+
 }

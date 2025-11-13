@@ -54,15 +54,21 @@
           <div class="field">
             <label for="plazo" class="field-label">Plazo</label>
             <p class="field-help">¿En cuánto tiempo quieres devolverlo?</p>
-            <div class="field-row">
+
+            <div class="field-row field-row-plazo">
               <button type="button" id="plazoMenos" class="btn btn-outline btn-square">&minus;</button>
               <input id="plazo" type="text" inputmode="decimal" class="input field-input" />
+              <button type="button" id="plazoMas" class="btn btn-outline btn-square">+</button>
+            </div>
+
+            <!-- SELECT SEPARADO (Años/Meses) -->
+            <div class="select-wrapper-movil">
               <select id="tipoPlazo" class="select">
                 <option value="años">Años</option>
                 <option value="meses">Meses</option>
               </select>
-              <button type="button" id="plazoMas" class="btn btn-outline btn-square">+</button>
             </div>
+
           </div>
 
           <!-- Interés anual -->
@@ -163,33 +169,31 @@
             </p>
           </div>
         </article>
-        <!-- ========================================= -->
-<!-- TARJETA: TASA DE ESFUERZO SIMPLE          -->
-<!-- ========================================= -->
-<article class="card card-secondary" id="tasaSimpleCard">
-  <header class="card-header">
-    <h3>Tasa de esfuerzo (simple)</h3>
-    <p>Relaciona la cuota del préstamo con tus ingresos mensuales.</p>
-  </header>
-  <div class="card-content">
-    <p id="tasaSimpleValor" class="resultado-numero">0 %</p>
-  </div>
-</article>
 
-<!-- ========================================= -->
-<!-- TARJETA: TASA DE ESFUERZO COMPLETA        -->
-<!-- ========================================= -->
-<article class="card card-highlight" id="tasaCompletaCard">
-  <header class="card-header">
-    <h3>Tasa de esfuerzo (completa)</h3>
-    <p>Incluye tus deudas mensuales actuales + la nueva cuota.</p>
-  </header>
-  <div class="card-content">
-    <p id="tasaCompletaValor" class="cuota-grande">0 %</p>
-    <p id="textoRiesgo" class="texto-explicativo" style="margin-top: 0.5rem;"></p>
-    <p id="explicacionTasaCompleta" class="texto-explicativo" style="margin-top: 0.5rem;"></p>
-  </div>
-</article>
+        <!-- Tasa simple -->
+        <article class="card card-secondary" id="tasaSimpleCard">
+          <header class="card-header">
+            <h3>Tasa de esfuerzo (simple)</h3>
+            <p>Relaciona la cuota del préstamo con tus ingresos mensuales.</p>
+          </header>
+          <div class="card-content">
+            <p id="tasaSimpleValor" class="resultado-numero">0 %</p>
+          </div>
+        </article>
+
+        <!-- Tasa completa -->
+        <article class="card card-highlight" id="tasaCompletaCard">
+          <header class="card-header">
+            <h3>Tasa de esfuerzo (completa)</h3>
+            <p>Incluye tus deudas mensuales actuales + la nueva cuota.</p>
+          </header>
+          <div class="card-content">
+            <p id="tasaCompletaValor" class="cuota-grande">0 %</p>
+            <p id="textoRiesgo" class="texto-explicativo" style="margin-top: 0.5rem;"></p>
+            <p id="explicacionTasaCompleta" class="texto-explicativo" style="margin-top: 0.5rem;"></p>
+          </div>
+        </article>
+
       </section>
     </main>
 
