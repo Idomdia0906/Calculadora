@@ -1,0 +1,514 @@
+:root {
+  --bg-page: #f3f4f6;
+  --bg-card: #ffffff;
+  --bg-muted: #f5f5f5;
+  --border: #e5e7eb;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --primary: #2563eb;
+  --primary-soft: #dbeafe;
+  --secondary: #0f766e;
+  --secondary-soft: #ccfbf1;
+  --radius-card: 20px;
+  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg-page);
+  color: var(--text-main);
+}
+
+/* Layout general */
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* Header */
+
+.header {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon {
+  font-size: 2.3rem;
+}
+
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+/* Main */
+
+.main {
+  padding: 1.75rem 0 3rem;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 1.35rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+}
+
+/* Tarjetas */
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1.75rem;
+}
+
+.card-header {
+  padding: 1.5rem 1.5rem 0.75rem;
+}
+
+.card-header h2,
+.card-header h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.4rem;
+}
+
+.card-header p {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+}
+
+.card-content {
+  padding: 0 1.5rem 1.5rem;
+}
+
+/* Campos */
+
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.field-label {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.field-help {
+  font-size: 0.98rem;
+  color: var(--text-muted);
+  margin: 0 0 0.55rem;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Inputs y select */
+
+.input,
+.select {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  height: 4rem;
+  font-size: 1.6rem;
+  padding: 0 1.25rem;
+  text-align: center;
+  flex: 1;
+  outline: none;
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+
+.select {
+  max-width: 7rem;
+  font-size: 1.1rem;
+}
+
+/* Botones */
+
+.btn {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: #e5e7eb;
+  color: var(--text-main);
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0 1.4rem;
+  height: 3.6rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-outline {
+  background: #ffffff;
+  border-color: var(--border);
+}
+
+.btn-outline:hover {
+  background: #f9fafb;
+}
+
+.btn-square {
+  width: 4rem;
+  height: 4rem;
+  font-size: 2rem;
+}
+
+.btn-big {
+  height: 4rem;
+  font-size: 1.2rem;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .actions {
+    flex-direction: row;
+  }
+}
+
+/* Resultados */
+
+.results {
+  display: none;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.results.visible {
+  display: block;
+}
+
+.card-highlight {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.card-secondary {
+  border-color: var(--secondary);
+  background: var(--secondary-soft);
+}
+
+.card-muted {
+  background: var(--bg-muted);
+}
+
+.cuota-grande {
+  font-size: 2.6rem;
+  text-align: center;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0.5rem 0;
+}
+
+.resultado-numero {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--secondary);
+  margin: 0.5rem 0;
+}
+
+.results-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 1.05rem;
+}
+
+.breakdown-row span:first-child {
+  color: var(--text-muted);
+}
+
+.texto-explicativo {
+  font-size: 1.05rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.text-resaltado {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Footer */
+
+.footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  margin-top: auto;
+}
+
+.footer-inner {
+  text-align: center;
+  padding: 1.5rem 0 2rem;
+}
+
+.footer-inner p {
+  margin: 0.15rem 0;
+}
+
+.footer-sub {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* Animación */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accesibilidad básico en móviles */
+
+@media (max-width: 600px) {
+  .header h1 {
+    font-size: 1.4rem;
+  }
+
+  .field-label {
+    font-size: 1.1rem;
+  }
+
+  .input,
+  .select {
+    font-size: 1.4rem;
+  }
+
+  .cuota-grande {
+    font-size: 2.2rem;
+  }
+}
+
+
+/* =====================================================
+   BANNER CORPORATIVO AEFA
+   ===================================================== */
+
+.banner {
+  position: relative;
+  width: 100%;
+  background: #0f1e2e; /* Azul corporativo */
+  padding: 2.5rem 0;
+  overflow: hidden;
+}
+
+.banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -140px; 
+  width: 340px;
+  height: 100%;
+  background: #b39b57; /* Dorado corporativo */
+  transform: skewX(-25deg);
+}
+
+.banner-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.banner-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.banner-logo {
+  width: 180px; /* Ajustado para pantalla */
+  height: auto;
+  object-fit: contain;
+}
+
+.banner-text h1 {
+  margin: 0;
+  padding: 0;
+  color: white;
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.banner-text h2 {
+  margin: 0.1rem 0 0;
+  color: #b39b57; /* Dorado */
+  font-size: 1.3rem;
+}
+
+.banner-web {
+  margin: 0.25rem 0 0;
+  color: white;
+  font-size: 1.05rem;
+}
+
+
+/* Responsive del banner */
+@media (max-width: 700px) {
+  .banner-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .banner-left {
+    flex-direction: column;
+  }
+
+  .banner-logo {
+    width: 150px;
+  }
+
+  .banner-text h1 {
+    font-size: 1.5rem;
+  }
+
+  .banner-text h2 {
+    font-size: 1.15rem;
+  }
+
+  .banner-web {
+    font-size: 0.95rem;
+  }
+}
+
+/* =====================================================
+   FOOTER CORPORATIVO AEFA
+   ===================================================== */
+
+.footer-aefa {
+  position: relative;
+  width: 100%;
+  background: #0f1e2e; /* Azul corporativo */
+  padding: 2.5rem 0;
+  color: white;
+  margin-top: 3rem;
+  overflow: hidden;
+}
+
+.footer-aefa::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: -120px;
+  width: 260px;
+  height: 100%;
+  background: #b39b57; /* Dorado corporativo */
+  transform: skewX(-25deg);
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.footer-info p {
+  margin: 0.3rem 0;
+  font-size: 1.1rem;
+}
+
+/* Responsive footer */
+@media (max-width: 700px) {
+  .footer-info p {
+    font-size: 0.95rem;
+  }
+}
