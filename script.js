@@ -1,4 +1,5 @@
 // --- CALCULADORA DE PRÉSTAMOS by Ignacio Dominguez Diaz--- //
+// --- Refactorizado por Gemini para mayor claridad y separación de concerns --- //
 
 document.addEventListener("DOMContentLoaded", () => {
   // --- Referencias a elementos del DOM ---
@@ -52,47 +53,33 @@ document.addEventListener("DOMContentLoaded", () => {
   if (completaCard) completaCard.style.display = "none";
 
   // --- Helpers ---
-  // FORMATEAR EUROS CORRECTAMENTE
   function formatearEuros(valor) {
     if (isNaN(valor) || valor === null) return "0,00 €";
-    return valor
-      .toFixed(2)
-      .replace(".", ",")
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €";
+    return (
+      valor
+        .toFixed(2)
+        .replace(".", ",")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €"
+    );
   }
-  // -----------------------------------------
-  // FORMATEADOR CON PUNTOS (SOLO MILES)
-  // -----------------------------------------
   function formatearMiles(numero) {
     return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
-  // -----------------------------------------
-  // LIMPIAR → QUITAR PUNTOS Y COMAS
-  // -----------------------------------------
   function limpiarNumero(str) {
     if (!str) return 0;
     return parseInt(str.replace(/[^\d]/g, "")) || 0;
   }
 
-  // -----------------------------------------
-  // OBTENER NÚMERO REAL DESDE EL INPUT
-  // -----------------------------------------
   function numeroSeguroFromInput(inputEl) {
     return limpiarNumero(inputEl.value);
   }
 
-  // -----------------------------------------
-  // ACTUALIZAR INPUT CON FORMATO
-  // -----------------------------------------
   function actualizarInput(input, valor) {
     const numeroLimpio = limpiarNumero(valor.toString());
     input.value = formatearMiles(numeroLimpio);
   }
 
-  // -----------------------------------------
-  // BOTONES + Y –
-  // -----------------------------------------
   function incrementar(campo) {
     if (campo === "cantidad") {
       const valor = numeroSeguroFromInput(cantidadInput);
@@ -189,25 +176,50 @@ document.addEventListener("DOMContentLoaded", () => {
     return ((deudas + cuota) / ingresos) * 100;
   }
 
-  function colorRiesgo(tasa) {
-    if (tasa === 0) return "#6b7280";
-    if (tasa < 30) return "var(--verde-esfuerzo)";
-    if (tasa < 40) return "var(--amarillo-esfuerzo)";
-    if (tasa < 50) return "var(--naranja-esfuerzo)";
-    return "var(--rojo-esfuerzo)";
+  // --- ¡NUEVA FUNCIÓN! ---
+  // Actualiza un elemento con la clase de riesgo adecuada
+  function actualizarClaseRiesgo(elemento, tasa) {
+    // Limpiar clases anteriores
+    elemento.classList.remove(
+      "saludable",
+      "aceptable",
+      "elevado",
+      "muy-alto"
+    );
+
+    // Añadir clase nueva
+    if (tasa === 0) return; // Sin clase
+    if (tasa < 30) {
+      elemento.classList.add("saludable");
+    } else if (tasa < 40) {
+      elemento.classList.add("aceptable");
+    } else if (tasa < 50) {
+      elemento.classList.add("elevado");
+    } else {
+      elemento.classList.add("muy-alto");
+    }
   }
 
   function textoRiesgo(tasa) {
-    if (tasa === 0) return "Introduce ingresos y deudas para evaluar tu tasa de esfuerzo.";
+    if (tasa === 0)
+      return "Introduce ingresos y deudas para evaluar tu tasa de esfuerzo.";
     if (tasa < 30) return "Nivel de endeudamiento saludable.";
-    if (tasa < 40) return "Capacidad aceptable. Se recomienda analizar estabilidad laboral.";
-    if (tasa < 50) return "Riesgo elevado. Este préstamo puede comprometer tu economía.";
+    if (tasa < 40)
+      return "Capacidad aceptable. Se recomienda analizar estabilidad laboral.";
+    if (tasa < 50)
+      return "Riesgo elevado. Este préstamo puede comprometer tu economía.";
     return "Riesgo MUY ALTO. No se recomienda asumir este préstamo.";
   }
 
+  // --- FUNCIÓN REFACTORIZADA ---
   function calcularTasaEsfuerzo(cuota) {
     const ingresos = numeroSeguroFromInput(ingresosInput);
     const deudas = numeroSeguroFromInput(deudasInput);
+
+    // Limpiar clases de riesgo al calcular
+    actualizarClaseRiesgo(tasaSimpleEl, 0);
+    actualizarClaseRiesgo(tasaCompletaEl, 0);
+    actualizarClaseRiesgo(textoRiesgoEl, 0);
 
     // Sin ingresos → no mostrar nada
     if (!ingresos || ingresos <= 0) {
@@ -227,8 +239,10 @@ document.addEventListener("DOMContentLoaded", () => {
       completaCard.style.display = "none";
 
       tasaSimpleEl.textContent = `${tasaSimple.toFixed(1)} %`;
-      tasaSimpleEl.style.color = colorRiesgo(tasaSimple);
-      textoRiesgoEl.textContent = "Introduce deudas para calcular la tasa completa";
+      actualizarClaseRiesgo(tasaSimpleEl, tasaSimple); // Usar nueva función
+
+      textoRiesgoEl.textContent =
+        "Introduce deudas para calcular la tasa completa";
       explicacionTasaCompleta.textContent = "";
       return;
     }
@@ -241,15 +255,19 @@ document.addEventListener("DOMContentLoaded", () => {
     completaCard.style.display = "block";
 
     tasaSimpleEl.textContent = `${tasaSimple.toFixed(1)} %`;
-    tasaSimpleEl.style.color = colorRiesgo(tasaSimple);
+    actualizarClaseRiesgo(tasaSimpleEl, tasaSimple); // Usar nueva función
 
     tasaCompletaEl.textContent = `${tasaCompleta.toFixed(1)} %`;
-    tasaCompletaEl.style.color = colorRiesgo(tasaCompleta);
+    actualizarClaseRiesgo(tasaCompletaEl, tasaCompleta); // Usar nueva función
 
     textoRiesgoEl.textContent = textoRiesgo(tasaCompleta);
+    actualizarClaseRiesgo(textoRiesgoEl, tasaCompleta); // Usar nueva función
 
-    explicacionTasaCompleta.textContent =
-      `(${formatearMiles(deudas)} € de deudas + ${formatearMiles(Math.round(cuota))} € de cuota) / ${formatearMiles(ingresos)} € de ingresos`;
+    explicacionTasaCompleta.textContent = `(${formatearMiles(
+      deudas
+    )} € de deudas + ${formatearMiles(
+      Math.round(cuota)
+    )} € de cuota) / ${formatearMiles(ingresos)} € de ingresos`;
   }
 
   function limpiarTodo() {
@@ -267,10 +285,11 @@ document.addEventListener("DOMContentLoaded", () => {
     completaCard.style.display = "none";
 
     tasaSimpleEl.textContent = "0 %";
-    tasaSimpleEl.style.color = "#6b7280";
+    actualizarClaseRiesgo(tasaSimpleEl, 0);
     tasaCompletaEl.textContent = "0 %";
-    tasaCompletaEl.style.color = "#6b7280";
+    actualizarClaseRiesgo(tasaCompletaEl, 0);
     textoRiesgoEl.textContent = "";
+    actualizarClaseRiesgo(textoRiesgoEl, 0);
     explicacionTasaCompleta.textContent = "";
   }
 

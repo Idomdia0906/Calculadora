@@ -14,7 +14,6 @@
 <body>
   <div class="page">
 
-    <!-- Header AEFA -->
     <header class="banner">
       <div class="banner-inner">
         <div class="banner-left">
@@ -28,10 +27,8 @@
       </div>
     </header>
 
-    <!-- Contenido principal -->
     <main class="container main">
 
-      <!-- TARJETA 1: DATOS DEL PRÉSTAMO -->
       <section class="card">
         <header class="card-header">
           <h2>Datos del préstamo</h2>
@@ -39,7 +36,6 @@
         </header>
 
         <div class="card-content">
-          <!-- Cantidad del préstamo -->
           <div class="field">
             <label for="cantidad" class="field-label">Cantidad del préstamo (€)</label>
             <p class="field-help">¿Cuánto dinero necesitas solicitar?</p>
@@ -50,7 +46,6 @@
             </div>
           </div>
 
-          <!-- Plazo -->
           <div class="field">
             <label for="plazo" class="field-label">Plazo</label>
             <p class="field-help">¿En cuánto tiempo quieres devolverlo?</p>
@@ -61,7 +56,6 @@
               <button type="button" id="plazoMas" class="btn btn-outline btn-square">+</button>
             </div>
 
-            <!-- SELECT SEPARADO (Años/Meses) -->
             <div class="select-wrapper-movil">
               <select id="tipoPlazo" class="select">
                 <option value="años">Años</option>
@@ -71,7 +65,6 @@
 
           </div>
 
-          <!-- Interés anual -->
           <div class="field">
             <label for="interes" class="field-label">Interés anual (%)</label>
             <p class="field-help">¿Qué porcentaje de interés te aplican?</p>
@@ -82,7 +75,6 @@
             </div>
           </div>
 
-          <!-- Botones -->
           <div class="actions">
             <button id="calcularBtn" class="btn btn-primary btn-big">🧮 Calcular</button>
             <button id="limpiarBtn" class="btn btn-outline btn-big">⟳ Limpiar</button>
@@ -90,7 +82,6 @@
         </div>
       </section>
 
-      <!-- TARJETA 2: SITUACIÓN FINANCIERA DEL CLIENTE -->
       <section class="card">
         <header class="card-header">
           <h2>Situación Financiera del Cliente</h2>
@@ -99,14 +90,12 @@
 
         <div class="card-content">
 
-          <!-- Ingresos netos mensuales -->
           <div class="field">
             <label for="ingresos" class="field-label">Ingresos netos mensuales (€)</label>
             <p class="field-help">Salario neto y otros ingresos demostrables.</p>
             <input id="ingresos" type="text" inputmode="decimal" class="input field-input" />
           </div>
 
-          <!-- Deudas mensuales actuales -->
           <div class="field">
             <label for="deudas" class="field-label">Deudas mensuales actuales (€)</label>
             <p class="field-help">Incluye hipoteca, préstamos, tarjetas y financiaciones.</p>
@@ -116,10 +105,8 @@
         </div>
       </section>
 
-      <!-- Resultados -->
-      <section id="resultados" class="results" aria-hidden="true">
+      <section id="resultados" class="results" aria-hidden="true" aria-live="polite">
 
-        <!-- Cuota mensual -->
         <article class="card card-highlight">
           <header class="card-header"><h2>Tu cuota mensual será:</h2></header>
           <div class="card-content">
@@ -127,7 +114,6 @@
           </div>
         </article>
 
-        <!-- Intereses totales y coste total -->
         <div class="results-grid">
 
           <article class="card card-secondary">
@@ -146,7 +132,6 @@
 
         </div>
 
-        <!-- Desglose -->
         <article class="card">
           <header class="card-header"><h3>Desglose de tu préstamo</h3></header>
           <div class="card-content breakdown">
@@ -156,7 +141,6 @@
           </div>
         </article>
 
-        <!-- Texto interpretativo -->
         <article class="card card-muted">
           <div class="card-content">
             <p class="texto-explicativo">
@@ -170,26 +154,24 @@
           </div>
         </article>
 
-        <!-- Tasa simple -->
         <article class="card card-secondary" id="tasaSimpleCard">
           <header class="card-header">
             <h3>Tasa de esfuerzo (simple)</h3>
             <p>Relaciona la cuota del préstamo con tus ingresos mensuales.</p>
           </header>
           <div class="card-content">
-            <p id="tasaSimpleValor" class="resultado-numero">0 %</p>
+            <p id="tasaSimpleValor" class="resultado-numero riesgo-valor">0 %</p>
           </div>
         </article>
 
-        <!-- Tasa completa -->
         <article class="card card-highlight" id="tasaCompletaCard">
           <header class="card-header">
             <h3>Tasa de esfuerzo (completa)</h3>
             <p>Incluye tus deudas mensuales actuales + la nueva cuota.</p>
           </header>
           <div class="card-content">
-            <p id="tasaCompletaValor" class="cuota-grande">0 %</p>
-            <p id="textoRiesgo" class="texto-explicativo" style="margin-top: 0.5rem;"></p>
+            <p id="tasaCompletaValor" class="cuota-grande riesgo-valor">0 %</p>
+            <p id="textoRiesgo" class="texto-explicativo riesgo-texto" style="margin-top: 0.5rem;"></p>
             <p id="explicacionTasaCompleta" class="texto-explicativo" style="margin-top: 0.5rem;"></p>
           </div>
         </article>
@@ -197,7 +179,6 @@
       </section>
     </main>
 
-    <!-- FOOTER AEFA -->
     <footer class="footer-aefa">
       <div class="footer-inner">
         <div class="footer-info">

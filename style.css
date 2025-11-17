@@ -98,7 +98,6 @@ body {
   background: var(--bg-card);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-soft);
-  border: 1px solid #e5e7eb;
   margin-bottom: 1.75rem;
 }
 
@@ -131,8 +130,8 @@ body {
 .field-label {
   display: block;
   font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
 .field-help {
@@ -151,12 +150,13 @@ body {
 
 .input,
 .select {
-  border-radius: 999px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   height: 4rem;
   font-size: 1.6rem;
-  padding: 0 1.25rem;
-  text-align: center;
+  padding: 0 1.5rem;
+  text-align: left;
+  font-weight: 600;
   flex: 1;
   outline: none;
 }
@@ -168,8 +168,9 @@ body {
 }
 
 .select {
-  max-width: 7rem;
+  max-width: 7.5rem;
   font-size: 1.1rem;
+  padding: 0 1rem;
 }
 
 /* Botones */
@@ -265,15 +266,15 @@ body {
 }
 
 .cuota-grande {
-  font-size: 2.6rem;
+  font-size: 3.2rem;
   text-align: center;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--primary);
   margin: 0.5rem 0;
 }
 
 .resultado-numero {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 700;
   text-align: center;
   color: var(--secondary);
@@ -310,9 +311,10 @@ body {
 }
 
 .texto-explicativo {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   text-align: center;
   color: var(--text-muted);
+  line-height: 1.5;
 }
 
 .text-resaltado {
@@ -565,3 +567,16 @@ body {
 }
 
 }
+
+/* =====================================================
+   CLASES DE RIESGO
+   ===================================================== */
+.riesgo-texto.saludable { color: var(--verde-esfuerzo); }
+.riesgo-texto.aceptable { color: var(--amarillo-esfuerzo); }
+.riesgo-texto.elevado { color: var(--naranja-esfuerzo); }
+.riesgo-texto.muy-alto { color: var(--rojo-esfuerzo); }
+
+.riesgo-valor.saludable { color: var(--verde-esfuerzo); }
+.riesgo-valor.aceptable { color: var(--amarillo-esfuerzo); }
+.riesgo-valor.elevado { color: var(--naranja-esfuerzo); }
+.riesgo-valor.muy-alto { color: var(--rojo-esfuerzo); }
