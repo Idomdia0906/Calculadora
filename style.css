@@ -159,6 +159,7 @@ body {
   font-weight: 600;
   flex: 1;
   outline: none;
+  min-width: 0; /* <<<--- SOLUCIÓN CLAVE (1) */
 }
 
 .input:focus,
@@ -220,6 +221,7 @@ body {
   width: 4rem;
   height: 4rem;
   font-size: 2rem;
+  flex-shrink: 0; /* Evita que los botones se encojan */
 }
 
 .btn-big {
@@ -387,7 +389,7 @@ body {
   position: relative;
   width: 100%;
   background: #0f1e2e; /* Azul corporativo */
-  padding: 2.5rem 0;
+  padding: 1rem 0; /* <<<--- CAMBIO AQUÍ (antes 1.5rem) */
   overflow: hidden;
 }
 
@@ -543,22 +545,26 @@ body {
     display: none;
   }
 
+  /* --- CAMBIOS PARA RESPONSIVE (2) --- */
+  
+  .field-row {
+    gap: 0.4rem; /* Reducir el espacio entre botones/input */
+  }
+
   /* Reducir tamaño de inputs en móvil */
   .input {
-    height: 3.2rem;
+    height: 3rem; /* Reducir altura */
     font-size: 1.3rem;
+    padding: 0 1.2rem; /* Reducir padding interno */
   }
 
   .btn-square {
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.6rem;
+    width: 3rem;  /* Reducir ancho */
+    height: 3rem; /* Reducir alto */
+    font-size: 1.5rem; /* Reducir fuente del +/- */
   }
-
-  /* Evitar desbordamientos */
-  .field-row {
-    flex-wrap: wrap;
-  }
+  
+  /* --- FIN DE CAMBIOS --- */
 
   /* Mejor separación visual */
   .field-row-plazo {
