@@ -146,6 +146,21 @@ body {
   gap: 0.5rem;
 }
 
+/* NUEVO: Campo dinámico de % */
+.field-dinamico {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  height: 4rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
 /* Inputs y select */
 
 .input,
@@ -159,7 +174,7 @@ body {
   font-weight: 600;
   flex: 1;
   outline: none;
-  min-width: 0; /* <<<--- SOLUCIÓN CLAVE (1) */
+  min-width: 0; /* Solución responsive */
 }
 
 .input:focus,
@@ -253,6 +268,14 @@ body {
   display: block;
 }
 
+/* NUEVO: Ocultar tarjetas de resultados individuales por JS */
+#tasaSimpleCard,
+#tasaCompletaCard,
+#gastosCard {
+  display: none;
+}
+
+
 .card-highlight {
   border-color: var(--primary);
   background: var(--primary-soft);
@@ -303,6 +326,7 @@ body {
 .breakdown-row {
   display: flex;
   justify-content: space-between;
+  align-items: center; /* Centrar verticalmente */
   padding: 0.4rem 0;
   border-bottom: 1px solid var(--border);
   font-size: 1.05rem;
@@ -311,6 +335,40 @@ body {
 .breakdown-row span:first-child {
   color: var(--text-muted);
 }
+
+/* NUEVO: Estilos para el input de Seguro de Vida */
+.gastos-input-row {
+  flex-wrap: wrap; /* Para móviles */
+}
+.gastos-input-row label {
+  color: var(--text-muted);
+  flex-basis: 150px; /* Espacio base */
+  flex-grow: 1;
+}
+.input-inline {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  height: 2.8rem;
+  font-size: 1.1rem;
+  padding: 0 0.75rem;
+  text-align: right;
+  font-weight: 600;
+  outline: none;
+  width: 120px;
+}
+.input-inline:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-soft);
+}
+
+/* NUEVO: Fila de total de gastos */
+.total-gastos {
+  font-weight: 700;
+  font-size: 1.2rem;
+  padding-top: 0.75rem;
+  border-bottom: none;
+}
+
 
 .texto-explicativo {
   font-size: 1.1rem;
@@ -378,6 +436,11 @@ body {
   .cuota-grande {
     font-size: 2.2rem;
   }
+
+  .field-dinamico {
+    height: 3.2rem;
+    font-size: 1.4rem;
+  }
 }
 
 
@@ -389,7 +452,7 @@ body {
   position: relative;
   width: 100%;
   background: #0f1e2e; /* Azul corporativo */
-  padding: 1rem 0; /* <<<--- CAMBIO AQUÍ (antes 1.5rem) */
+  padding: 1rem 0; 
   overflow: hidden;
 }
 
@@ -519,10 +582,6 @@ body {
   .footer-info p {
     font-size: 0.95rem;
   }
-#tasaSimpleCard,
-#tasaCompletaCard {
-  display: none;
-}
 
 /* =====================================================
    AJUSTE DEL SELECT DE “AÑOS / MESES” PARA MÓVIL
@@ -544,8 +603,6 @@ body {
   .field-row-plazo .select {
     display: none;
   }
-
-  /* --- CAMBIOS PARA RESPONSIVE (2) --- */
   
   .field-row {
     gap: 0.4rem; /* Reducir el espacio entre botones/input */
@@ -563,8 +620,6 @@ body {
     height: 3rem; /* Reducir alto */
     font-size: 1.5rem; /* Reducir fuente del +/- */
   }
-  
-  /* --- FIN DE CAMBIOS --- */
 
   /* Mejor separación visual */
   .field-row-plazo {

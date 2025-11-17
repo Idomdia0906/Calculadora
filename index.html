@@ -8,9 +8,9 @@
     name="description"
     content="Calculadora de préstamos sencilla, optimizada para móviles y personas mayores. Calcula tu cuota mensual, intereses totales y coste total."
   />
+  <link rel="icon" href="img/logo.png?v=2" type="image/png">
   <link rel="stylesheet" href="style.css" />
   <script defer src="script.js"></script>
-  <link rel="icon" href="img/image.png" type="image/png">
 </head>
 <body>
   <div class="page">
@@ -37,6 +37,21 @@
         </header>
 
         <div class="card-content">
+          <div class="field">
+            <label for="cantidadCompra" class="field-label">Cantidad de compra (€)</label>
+            <p class="field-help">Coste total de la operación (ej. vivienda).</p>
+            <div class="field-row">
+              <button type="button" id="cantidadCompraMenos" class="btn btn-outline btn-square">&minus;</button>
+              <input id="cantidadCompra" type="text" inputmode="decimal" class="input field-input" />
+              <button type="button" id="cantidadCompraMas" class="btn btn-outline btn-square">+</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Porcentaje de financiación</label>
+            <div id="porcentajeFinanciacion" class="field-dinamico">0 %</div>
+          </div>
+          
           <div class="field">
             <label for="cantidad" class="field-label">Cantidad del préstamo (€)</label>
             <p class="field-help">¿Cuánto dinero necesitas solicitar?</p>
@@ -73,6 +88,17 @@
               <button type="button" id="interesMenos" class="btn btn-outline btn-square">&minus;</button>
               <input id="interes" type="text" inputmode="decimal" class="input field-input" />
               <button type="button" id="interesMas" class="btn btn-outline btn-square">+</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="tipoITP" class="field-label">Tipo de ITP</label>
+            <p class="field-help">Selecciona el porcentaje de impuesto.</p>
+            <div class="select-wrapper-movil" style="display: block;">
+              <select id="tipoITP" class="select" style="max-width: none;">
+                <option value="3.5">3.5% (Reducido)</option>
+                <option value="7">7% (General)</option>
+              </select>
             </div>
           </div>
 
@@ -142,6 +168,24 @@
           </div>
         </article>
 
+        <article class="card" id="gastosCard">
+          <header class="card-header"><h3>Gastos de la operación</h3></header>
+          <div class="card-content breakdown">
+            <div class="breakdown-row"><span>ITP (<span id="itpTipoTexto"></span>):</span><span id="gastoITP"></span></div>
+            <div class="breakdown-row"><span>Notaría:</span><span id="gastoNotaria"></span></div>
+            <div class="breakdown-row"><span>Registro:</span><span id="gastoRegistro"></span></div>
+            <div class="breakdown-row"><span>Gestoría del Banco:</span><span id="gastoGestoria"></span></div>
+            <div class="breakdown-row"><span>Tasación:</span><span id="gastoTasacion"></span></div>
+            <div class="breakdown-row"><span>Seguro de Hogar:</span><span id="gastoHogar"></span></div>
+            
+            <div class="breakdown-row gastos-input-row">
+              <label for="seguroVidaInput">Seguro de Vida:</label>
+              <input id="seguroVidaInput" type="text" inputmode="decimal" class="input-inline" placeholder="0"/>
+            </div>
+            
+            <div class="breakdown-row total-gastos"><span>Total Gastos:</span><span id="gastoTotal"></span></div>
+          </div>
+        </article>
         <article class="card card-muted">
           <div class="card-content">
             <p class="texto-explicativo">
