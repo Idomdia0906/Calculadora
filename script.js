@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const interesMenos = document.getElementById("interesMenos");
   const interesMas = document.getElementById("interesMas");
 
-  // Sliders (NUEVO)
+  // Sliders
   const rangeCompra = document.getElementById("rangeCompra");
   const rangePrestamo = document.getElementById("rangePrestamo");
   const rangePlazo = document.getElementById("rangePlazo");
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const mesesTotalesTextoEl = document.getElementById("mesesTotalesTexto");
   const interesesTotalesTextoEl = document.getElementById("interesesTotalesTexto");
 
-  // -- Gastos (Nueva)
+  // -- Gastos
   const gastosCard = document.getElementById("gastosCard");
   const itpTipoTextoEl = document.getElementById("itpTipoTexto");
   const gastoITPEl = document.getElementById("gastoITP");
@@ -74,10 +74,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const completaCard = document.getElementById("tasaCompletaCard");
   const explicacionTasaCompleta = document.getElementById("explicacionTasaCompleta");
 
-  // --- Variables para guardar gastos base ---
+  // -- Historial (NUEVO)
+  const historialCard = document.getElementById("historialCard");
+  const listaHistorial = document.getElementById("listaHistorial");
+  const borrarHistorialBtn = document.getElementById("borrarHistorialBtn");
+
+  // --- Variables globales ---
   let gITP = 0;
   let gNotaria = 0;
   let gRegistro = 0;
+  
+  let intervaloRepeticion = null;
+  let timeoutInicio = null;
 
   // --- Valores iniciales ---
   cantidadCompraInput.value = "100000";
@@ -90,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
   deudasInput.value = "";
   seguroVidaInput.value = "";
   
-  // Inicializar sliders con los valores por defecto
+  // Inicializar sliders
   rangeCompra.value = 100000;
   rangePrestamo.value = 80000;
   rangePlazo.value = 5;
@@ -100,6 +108,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (gastosCard) gastosCard.style.display = "none";
   if (simpleCard) simpleCard.style.display = "none";
   if (completaCard) completaCard.style.display = "none";
+  if (historialCard) {
+      historialCard.style.display = "none";
+      cargarHistorial(); // Cargar si existe al inicio
+  }
 
   // --- Helpers ---
   function formatearEuros(valor) {
@@ -120,14 +132,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return parseFloat(str.toString().replace(/[^\d.]/g, "").replace(/\./g, "").replace(",", ".")) || 0;
   }
   
-  // Versión específica para enteros (dinero)
   function limpiarNumeroEntero(str) {
       if (!str) return 0;
       return parseInt(str.toString().replace(/[^\d]/g, "")) || 0;
   }
 
   function numeroSeguroFromInput(inputEl) {
-    // Para el interés necesitamos decimales, para el resto enteros
     if (inputEl.id === 'interes') {
         return parseFloat(inputEl.value.replace(",", ".")) || 0;
     }
@@ -135,7 +145,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function actualizarInput(input, valor) {
-    // Si es interés, formato con decimales
     if (input.id === 'interes') {
         input.value = parseFloat(valor).toFixed(2);
     } else {
@@ -157,12 +166,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const porcentaje = (prestamo / compra) * 100;
     porcentajeFinanciacionEl.textContent = `${porcentaje.toFixed(1)} %`;
   }
-  // Calcular al inicio
   calcularPorcentajeFinanciacion();
 
-
-  // --- FUNCIONES DE SINCRONIZACIÓN (Input <-> Slider) ---
-  
+  // --- Sincronización Slider <-> Input ---
   function syncSliderToInput(slider, input) {
       const val = numeroSeguroFromInput(input);
       slider.value = val;
@@ -171,35 +177,33 @@ document.addEventListener("DOMContentLoaded", () => {
   function syncInputToSlider(input, slider) {
       const val = slider.value;
       actualizarInput(input, val);
-      // Recalcular % dinámico si aplica
       if (input.id === "cantidadCompra" || input.id === "cantidad") {
         calcularPorcentajeFinanciacion();
       }
   }
 
-
-  // --- Botones + y – ---
+  // --- Lógica de Incremento / Decremento ---
   function incrementar(campo) {
     if (campo === "cantidadCompra") {
       const valor = numeroSeguroFromInput(cantidadCompraInput);
       const nuevoValor = valor + 1000;
       actualizarInput(cantidadCompraInput, nuevoValor);
-      rangeCompra.value = nuevoValor; // Sync slider
+      rangeCompra.value = nuevoValor; 
     } else if (campo === "cantidad") {
       const valor = numeroSeguroFromInput(cantidadInput);
       const nuevoValor = valor + 1000;
       actualizarInput(cantidadInput, nuevoValor);
-      rangePrestamo.value = nuevoValor; // Sync slider
+      rangePrestamo.value = nuevoValor; 
     } else if (campo === "plazo") {
       const valor = numeroSeguroFromInput(plazoInput);
       const nuevoValor = valor + 1;
       plazoInput.value = nuevoValor;
-      rangePlazo.value = nuevoValor; // Sync slider
+      rangePlazo.value = nuevoValor; 
     } else if (campo === "interes") {
       const valor = parseFloat(interesInput.value.replace(",", "."));
       const nuevoValor = (valor + 0.05).toFixed(2);
       interesInput.value = nuevoValor;
-      rangeInteres.value = nuevoValor; // Sync slider
+      rangeInteres.value = nuevoValor; 
     }
     
     if (campo === "cantidadCompra" || campo === "cantidad") {
@@ -212,27 +216,52 @@ document.addEventListener("DOMContentLoaded", () => {
       const valor = numeroSeguroFromInput(cantidadCompraInput);
       const nuevoValor = Math.max(0, valor - 1000);
       actualizarInput(cantidadCompraInput, nuevoValor);
-      rangeCompra.value = nuevoValor; // Sync slider
+      rangeCompra.value = nuevoValor; 
     } else if (campo === "cantidad") {
       const valor = numeroSeguroFromInput(cantidadInput);
       const nuevoValor = Math.max(0, valor - 1000);
       actualizarInput(cantidadInput, nuevoValor);
-      rangePrestamo.value = nuevoValor; // Sync slider
+      rangePrestamo.value = nuevoValor; 
     } else if (campo === "plazo") {
       const valor = numeroSeguroFromInput(plazoInput);
       const nuevoValor = Math.max(1, valor - 1);
       plazoInput.value = nuevoValor;
-      rangePlazo.value = nuevoValor; // Sync slider
+      rangePlazo.value = nuevoValor; 
     } else if (campo === "interes") {
       const valor = parseFloat(interesInput.value.replace(",", "."));
       const nuevoValor = Math.max(0, valor - 0.05).toFixed(2);
       interesInput.value = nuevoValor;
-      rangeInteres.value = nuevoValor; // Sync slider
+      rangeInteres.value = nuevoValor; 
     }
     
     if (campo === "cantidadCompra" || campo === "cantidad") {
       calcularPorcentajeFinanciacion();
     }
+  }
+
+  // --- Press & Hold ---
+  function agregarEventosContinuos(boton, accion, parametro) {
+    const iniciar = (e) => {
+        if (e.type === 'touchstart') e.preventDefault();
+        accion(parametro);
+        timeoutInicio = setTimeout(() => {
+            intervaloRepeticion = setInterval(() => {
+                accion(parametro);
+            }, 100); 
+        }, 500);
+    };
+    const detener = () => {
+        clearTimeout(timeoutInicio);
+        clearInterval(intervaloRepeticion);
+        timeoutInicio = null;
+        intervaloRepeticion = null;
+    };
+    boton.addEventListener('mousedown', iniciar);
+    boton.addEventListener('mouseup', detener);
+    boton.addEventListener('mouseleave', detener);
+    boton.addEventListener('touchstart', iniciar);
+    boton.addEventListener('touchend', detener);
+    boton.addEventListener('touchcancel', detener);
   }
 
   // --- Cálculo del préstamo ---
@@ -269,7 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
       intereses = totalPagado - P;
     }
 
-    // Actualizar resultados de Préstamo
     cuotaMensualEl.textContent = formatearEuros(cuota);
     interesesTotalesEl.textContent = formatearEuros(intereses);
     costeTotalEl.textContent = formatearEuros(totalPagado);
@@ -288,19 +316,18 @@ document.addEventListener("DOMContentLoaded", () => {
     resultadosSection.classList.add("visible");
     resultadosSection.setAttribute("aria-hidden", "false");
 
-    return cuota;
+    return { cuota, totalPagado, textoPlazo };
   }
 
-  // --- Cálculo dinámico de Total de Gastos ---
+  // --- Total de Gastos ---
   function actualizarTotalGastos() {
     const seguroVida = numeroSeguroFromInput(seguroVidaInput);
     const gastoGestoria = 500;
     const gastoTasacion = 500;
     const gastoHogar = 200;
-    
-    // Suma usando las variables globales (gITP, etc.) y los valores fijos
     const totalGastos = gITP + gNotaria + gRegistro + gastoGestoria + gastoTasacion + gastoHogar + seguroVida;
     gastoTotalEl.textContent = formatearEuros(totalGastos);
+    return totalGastos;
   }
 
   // --- Cálculo de Gastos ---
@@ -310,18 +337,14 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Por favor, introduce una 'Cantidad de compra' válida.");
       return false; 
     }
-    
     const itpPorcentaje = parseFloat(tipoITPSelect.value);
-    
-    // Cálculos y asignación a variables globales
     gITP = compra * (itpPorcentaje / 100);
-    gNotaria = compra * 0.01; // 1% de la compra
-    gRegistro = gNotaria * 0.8; // 80% de notaría
+    gNotaria = compra * 0.01; 
+    gRegistro = gNotaria * 0.8; 
     const gastoGestoria = 500;
     const gastoTasacion = 500;
     const gastoHogar = 200;
     
-    // Actualizar DOM
     itpTipoTextoEl.textContent = `${itpPorcentaje}%`;
     gastoITPEl.textContent = formatearEuros(gITP);
     gastoNotariaEl.textContent = formatearEuros(gNotaria);
@@ -331,12 +354,9 @@ document.addEventListener("DOMContentLoaded", () => {
     gastoHogarEl.textContent = formatearEuros(gastoHogar);
 
     gastosCard.style.display = "block";
-    
-    // Llamar a la función que calcula el total
     actualizarTotalGastos(); 
     return true; 
   }
-
 
   // --- Tasa de esfuerzo ---
   function calcularTasaSimple(cuota, ingresos) {
@@ -350,12 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function actualizarClaseRiesgo(elemento, tasa) {
-    elemento.classList.remove(
-      "saludable",
-      "aceptable",
-      "elevado",
-      "muy-alto"
-    );
+    elemento.classList.remove("saludable", "aceptable", "elevado", "muy-alto");
     if (tasa === 0) return; 
     if (tasa < 30) {
       elemento.classList.add("saludable");
@@ -369,13 +384,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function textoRiesgo(tasa) {
-    if (tasa === 0)
-      return "Introduce ingresos y deudas para evaluar tu tasa de esfuerzo.";
+    if (tasa === 0) return "Introduce ingresos y deudas para evaluar tu tasa de esfuerzo.";
     if (tasa < 30) return "Nivel de endeudamiento saludable.";
-    if (tasa < 40)
-      return "Capacidad aceptable. Se recomienda analizar estabilidad laboral.";
-    if (tasa < 50)
-      return "Riesgo elevado. Este préstamo puede comprometer tu economía.";
+    if (tasa < 40) return "Capacidad aceptable. Se recomienda analizar estabilidad laboral.";
+    if (tasa < 50) return "Riesgo elevado. Este préstamo puede comprometer tu economía.";
     return "Riesgo MUY ALTO. No se recomienda asumir este préstamo.";
   }
 
@@ -394,90 +406,108 @@ document.addEventListener("DOMContentLoaded", () => {
       tasaCompletaEl.textContent = "0 %";
       textoRiesgoEl.textContent = "";
       explicacionTasaCompleta.textContent = "";
-      return;
+      return 0; // Return 0 for logs
     }
 
+    let tasaFinal = 0;
     if (ingresos > 0 && (!deudas || deudas <= 0)) {
       const tasaSimple = calcularTasaSimple(cuota, ingresos);
       simpleCard.style.display = "block";
       completaCard.style.display = "none";
-
       tasaSimpleEl.textContent = `${tasaSimple.toFixed(1)} %`;
       actualizarClaseRiesgo(tasaSimpleEl, tasaSimple); 
-
-      textoRiesgoEl.textContent =
-        "Introduce deudas para calcular la tasa completa";
+      textoRiesgoEl.textContent = "Introduce deudas para calcular la tasa completa";
       explicacionTasaCompleta.textContent = "";
-      return;
+      tasaFinal = tasaSimple;
+    } else {
+      const tasaSimple = calcularTasaSimple(cuota, ingresos);
+      const tasaCompleta = calcularTasaCompleta(cuota, ingresos, deudas);
+      simpleCard.style.display = "block";
+      completaCard.style.display = "block";
+      tasaSimpleEl.textContent = `${tasaSimple.toFixed(1)} %`;
+      actualizarClaseRiesgo(tasaSimpleEl, tasaSimple); 
+      tasaCompletaEl.textContent = `${tasaCompleta.toFixed(1)} %`;
+      actualizarClaseRiesgo(tasaCompletaEl, tasaCompleta); 
+      textoRiesgoEl.textContent = textoRiesgo(tasaCompleta);
+      actualizarClaseRiesgo(textoRiesgoEl, tasaCompleta); 
+      explicacionTasaCompleta.textContent = `(${formatearMiles(deudas)} € de deudas + ${formatearMiles(Math.round(cuota))} € de cuota) / ${formatearMiles(ingresos)} € de ingresos`;
+      tasaFinal = tasaCompleta;
     }
-
-    const tasaSimple = calcularTasaSimple(cuota, ingresos);
-    const tasaCompleta = calcularTasaCompleta(cuota, ingresos, deudas);
-
-    simpleCard.style.display = "block";
-    completaCard.style.display = "block";
-
-    tasaSimpleEl.textContent = `${tasaSimple.toFixed(1)} %`;
-    actualizarClaseRiesgo(tasaSimpleEl, tasaSimple); 
-
-    tasaCompletaEl.textContent = `${tasaCompleta.toFixed(1)} %`;
-    actualizarClaseRiesgo(tasaCompletaEl, tasaCompleta); 
-
-    textoRiesgoEl.textContent = textoRiesgo(tasaCompleta);
-    actualizarClaseRiesgo(textoRiesgoEl, tasaCompleta); 
-
-    explicacionTasaCompleta.textContent = `(${formatearMiles(
-      deudas
-    )} € de deudas + ${formatearMiles(
-      Math.round(cuota)
-    )} € de cuota) / ${formatearMiles(ingresos)} € de ingresos`;
+    return tasaFinal;
   }
 
-  // --- Limpiar todo ---
-  function limpiarTodo() {
-    cantidadCompraInput.value = "100000";
-    cantidadInput.value = "80000";
-    plazoInput.value = "5";
-    interesInput.value = "3.50";
-    tipoPlazoSelect.value = "años";
-    tipoITPSelect.value = "3.5";
-    ingresosInput.value = "";
-    deudasInput.value = "";
-    seguroVidaInput.value = "";
-    
-    // Resetear sliders
-    rangeCompra.value = 100000;
-    rangePrestamo.value = 80000;
-    rangePlazo.value = 5;
-    rangeInteres.value = 3.5;
-
-    resultadosSection.classList.remove("visible");
-    resultadosSection.setAttribute("aria-hidden", "true");
-
-    gastosCard.style.display = "none";
-    simpleCard.style.display = "none";
-    completaCard.style.display = "none";
-
-    // Resetear gastos
-    gITP = 0;
-    gNotaria = 0;
-    gRegistro = 0;
-    actualizarTotalGastos(); // Pone el total a 0,00 €
-
-    tasaSimpleEl.textContent = "0 %";
-    actualizarClaseRiesgo(tasaSimpleEl, 0);
-    tasaCompletaEl.textContent = "0 %";
-    actualizarClaseRiesgo(tasaCompletaEl, 0);
-    textoRiesgoEl.textContent = "";
-    actualizarClaseRiesgo(textoRiesgoEl, 0);
-    explicacionTasaCompleta.textContent = "";
-    
-    calcularPorcentajeFinanciacion();
+  // --- HISTORIAL (Lógica Nueva) ---
+  function guardarEnHistorial(datos) {
+      // 1. Obtener historial existente
+      let historial = JSON.parse(localStorage.getItem('historialPrestamos')) || [];
+      
+      // 2. Añadir nuevo al principio
+      const ahora = new Date();
+      const horaFormateada = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      const nuevoRegistro = {
+          hora: horaFormateada,
+          compra: datos.compra,
+          prestamo: datos.prestamo,
+          cuota: datos.cuota,
+          tasa: datos.tasa
+      };
+      
+      historial.unshift(nuevoRegistro);
+      
+      // 3. Limitar a 5 últimos
+      if (historial.length > 5) {
+          historial.pop();
+      }
+      
+      // 4. Guardar
+      localStorage.setItem('historialPrestamos', JSON.stringify(historial));
+      
+      // 5. Renderizar
+      renderizarHistorial();
   }
 
-  // --- Formateo automático de inputs ---
-  // También sincronizamos con el slider aquí
+  function renderizarHistorial() {
+      const historial = JSON.parse(localStorage.getItem('historialPrestamos')) || [];
+      
+      if (historial.length === 0) {
+          historialCard.style.display = "none";
+          return;
+      }
+      
+      historialCard.style.display = "block";
+      listaHistorial.innerHTML = "";
+      
+      historial.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'historial-item';
+          div.innerHTML = `
+            <div class="historial-header">
+                <span>Cuota: ${item.cuota}</span>
+                <span class="historial-hora">${item.hora}</span>
+            </div>
+            <div class="historial-detalles">
+                <span>Compra: ${item.compra}</span>
+                <span>Préstamo: ${item.prestamo}</span>
+                <span>Tasa: ${item.tasa}</span>
+            </div>
+          `;
+          listaHistorial.appendChild(div);
+      });
+  }
   
+  function borrarHistorial() {
+      localStorage.removeItem('historialPrestamos');
+      renderizarHistorial();
+  }
+
+  // Wrapper para cargar historial al inicio si hay datos
+  function cargarHistorial() {
+      renderizarHistorial();
+  }
+
+
+  // --- Listeners de Input y Sliders ---
   cantidadCompraInput.addEventListener("input", () => {
     actualizarInput(cantidadCompraInput, cantidadCompraInput.value);
     syncSliderToInput(rangeCompra, cantidadCompraInput);
@@ -490,29 +520,15 @@ document.addEventListener("DOMContentLoaded", () => {
     calcularPorcentajeFinanciacion();
   });
   
-  plazoInput.addEventListener("input", () => {
-    // El plazo no lleva miles, solo validación
-    syncSliderToInput(rangePlazo, plazoInput);
-  });
-  
-  interesInput.addEventListener("input", () => {
-      // El interes no lleva miles
-      syncSliderToInput(rangeInteres, interesInput);
-  });
+  plazoInput.addEventListener("input", () => syncSliderToInput(rangePlazo, plazoInput));
+  interesInput.addEventListener("input", () => syncSliderToInput(rangeInteres, interesInput));
 
   [ingresosInput, deudasInput, seguroVidaInput].forEach((input) => {
-    input.addEventListener("input", () => {
-      actualizarInput(input, input.value);
-    });
+    input.addEventListener("input", () => actualizarInput(input, input.value));
   });
   
-  // --- Eventos de los SLIDERS (NUEVO) ---
-  rangeCompra.addEventListener("input", () => {
-      syncInputToSlider(cantidadCompraInput, rangeCompra);
-  });
-  rangePrestamo.addEventListener("input", () => {
-      syncInputToSlider(cantidadInput, rangePrestamo);
-  });
+  rangeCompra.addEventListener("input", () => syncInputToSlider(cantidadCompraInput, rangeCompra));
+  rangePrestamo.addEventListener("input", () => syncInputToSlider(cantidadInput, rangePrestamo));
   rangePlazo.addEventListener("input", () => {
       plazoInput.value = rangePlazo.value;
   });
@@ -520,63 +536,47 @@ document.addEventListener("DOMContentLoaded", () => {
       interesInput.value = parseFloat(rangeInteres.value).toFixed(2);
   });
 
-
-  // Evento para total de gastos dinámico
   seguroVidaInput.addEventListener("input", actualizarTotalGastos);
-
-
-  // --- Eventos de botones + / - ---
-  cantidadCompraMas.addEventListener("click", () => incrementar("cantidadCompra"));
-  cantidadCompraMenos.addEventListener("click", () => decrementar("cantidadCompra"));
-  cantidadMas.addEventListener("click", () => incrementar("cantidad"));
-  cantidadMenos.addEventListener("click", () => decrementar("cantidad"));
-  plazoMas.addEventListener("click", () => incrementar("plazo"));
-  plazoMenos.addEventListener("click", () => decrementar("plazo"));
-  interesMas.addEventListener("click", () => incrementar("interes"));
-  interesMenos.addEventListener("click", () => decrementar("interes"));
+  
+  // Botones Press & Hold
+  agregarEventosContinuos(cantidadCompraMas, incrementar, "cantidadCompra");
+  agregarEventosContinuos(cantidadCompraMenos, decrementar, "cantidadCompra");
+  agregarEventosContinuos(cantidadMas, incrementar, "cantidad");
+  agregarEventosContinuos(cantidadMenos, decrementar, "cantidad");
+  agregarEventosContinuos(plazoMas, incrementar, "plazo");
+  agregarEventosContinuos(plazoMenos, decrementar, "plazo");
+  agregarEventosContinuos(interesMas, incrementar, "interes");
+  agregarEventosContinuos(interesMenos, decrementar, "interes");
 
   // --- Calcular / Limpiar ---
   calcularBtn.addEventListener("click", () => {
-    const cuota = calcularPrestamo();
-    if (cuota !== null) {
-      const gastosOk = calcularGastos(); // Calcula gastos y guarda los valores base
+    const resultadoPrestamo = calcularPrestamo(); // Ahora devuelve objeto
+    if (resultadoPrestamo) {
+      const gastosOk = calcularGastos(); 
       if (gastosOk) {
-        calcularTasaEsfuerzo(cuota); // Solo calcula la tasa si los gastos son válidos
+        const tasa = calcularTasaEsfuerzo(resultadoPrestamo.cuota); 
+        
+        // GUARDAR EN HISTORIAL
+        guardarEnHistorial({
+            compra: formatearMiles(numeroSeguroFromInput(cantidadCompraInput)) + " €",
+            prestamo: formatearMiles(numeroSeguroFromInput(cantidadInput)) + " €",
+            cuota: formatearEuros(resultadoPrestamo.cuota),
+            tasa: tasa > 0 ? tasa.toFixed(1) + "%" : "N/A"
+        });
       }
     }
   });
 
   limpiarBtn.addEventListener("click", limpiarTodo);
+  if (borrarHistorialBtn) borrarHistorialBtn.addEventListener("click", borrarHistorial);
 
-  // --- SEGURIDAD BÁSICA (Bloqueo de click derecho e inspector) ---
-
-  // 1. Bloquear el click derecho
-  document.addEventListener('contextmenu', function(event) {
-    event.preventDefault();
-  });
-
-  // 2. Bloquear atajos de teclado comunes para inspeccionar
-  document.addEventListener('keydown', function(event) {
-    // F12
-    if (event.key === 'F12') {
-      event.preventDefault();
-    }
-    // Ctrl+Shift+I (Inspector)
-    if (event.ctrlKey && event.shiftKey && event.key === 'I') {
-      event.preventDefault();
-    }
-    // Ctrl+Shift+J (Consola)
-    if (event.ctrlKey && event.shiftKey && event.key === 'J') {
-      event.preventDefault();
-    }
-    // Ctrl+Shift+C (Seleccionar elemento)
-    if (event.ctrlKey && event.shiftKey && event.key === 'C') {
-      event.preventDefault();
-    }
-    // Ctrl+U (Ver código fuente)
-    if (event.ctrlKey && event.key === 'u') {
-      event.preventDefault();
+  // --- Seguridad Básica ---
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'F12' || 
+       (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+       (e.ctrlKey && e.key === 'u')) {
+      e.preventDefault();
     }
   });
-
 });
