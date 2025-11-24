@@ -28,6 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const interesMenos = document.getElementById("interesMenos");
   const interesMas = document.getElementById("interesMas");
 
+  // Sliders (NUEVO)
+  const rangeCompra = document.getElementById("rangeCompra");
+  const rangePrestamo = document.getElementById("rangePrestamo");
+  const rangePlazo = document.getElementById("rangePlazo");
+  const rangeInteres = document.getElementById("rangeInteres");
+
   // Botones Acción
   const calcularBtn = document.getElementById("calcularBtn");
   const limpiarBtn = document.getElementById("limpiarBtn");
@@ -68,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const completaCard = document.getElementById("tasaCompletaCard");
   const explicacionTasaCompleta = document.getElementById("explicacionTasaCompleta");
 
-  // --- NUEVO: Variables para guardar gastos base ---
+  // --- Variables para guardar gastos base ---
   let gITP = 0;
   let gNotaria = 0;
   let gRegistro = 0;
@@ -77,12 +83,18 @@ document.addEventListener("DOMContentLoaded", () => {
   cantidadCompraInput.value = "100000";
   cantidadInput.value = "80000";
   plazoInput.value = "5";
-  interesInput.value = "3.5";
+  interesInput.value = "3.50"; 
   tipoPlazoSelect.value = "años";
   tipoITPSelect.value = "3.5";
   ingresosInput.value = "";
   deudasInput.value = "";
   seguroVidaInput.value = "";
+  
+  // Inicializar sliders con los valores por defecto
+  rangeCompra.value = 100000;
+  rangePrestamo.value = 80000;
+  rangePlazo.value = 5;
+  rangeInteres.value = 3.5;
 
   // Ocultar tarjetas al inicio
   if (gastosCard) gastosCard.style.display = "none";
@@ -105,16 +117,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function limpiarNumero(str) {
     if (!str) return 0;
-    return parseInt(str.replace(/[^\d]/g, "")) || 0;
+    return parseFloat(str.toString().replace(/[^\d.]/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+  }
+  
+  // Versión específica para enteros (dinero)
+  function limpiarNumeroEntero(str) {
+      if (!str) return 0;
+      return parseInt(str.toString().replace(/[^\d]/g, "")) || 0;
   }
 
   function numeroSeguroFromInput(inputEl) {
-    return limpiarNumero(inputEl.value);
+    // Para el interés necesitamos decimales, para el resto enteros
+    if (inputEl.id === 'interes') {
+        return parseFloat(inputEl.value.replace(",", ".")) || 0;
+    }
+    return limpiarNumeroEntero(inputEl.value);
   }
 
   function actualizarInput(input, valor) {
-    const numeroLimpio = limpiarNumero(valor.toString());
-    input.value = formatearMiles(numeroLimpio);
+    // Si es interés, formato con decimales
+    if (input.id === 'interes') {
+        input.value = parseFloat(valor).toFixed(2);
+    } else {
+        const numeroLimpio = parseInt(valor);
+        input.value = formatearMiles(numeroLimpio);
+    }
   }
 
   // --- Cálculo dinámico de % ---
@@ -134,22 +161,47 @@ document.addEventListener("DOMContentLoaded", () => {
   calcularPorcentajeFinanciacion();
 
 
-  // --- Botones + y – (Actualizado) ---
+  // --- FUNCIONES DE SINCRONIZACIÓN (Input <-> Slider) ---
+  
+  function syncSliderToInput(slider, input) {
+      const val = numeroSeguroFromInput(input);
+      slider.value = val;
+  }
+  
+  function syncInputToSlider(input, slider) {
+      const val = slider.value;
+      actualizarInput(input, val);
+      // Recalcular % dinámico si aplica
+      if (input.id === "cantidadCompra" || input.id === "cantidad") {
+        calcularPorcentajeFinanciacion();
+      }
+  }
+
+
+  // --- Botones + y – ---
   function incrementar(campo) {
     if (campo === "cantidadCompra") {
       const valor = numeroSeguroFromInput(cantidadCompraInput);
-      actualizarInput(cantidadCompraInput, valor + 1000);
+      const nuevoValor = valor + 1000;
+      actualizarInput(cantidadCompraInput, nuevoValor);
+      rangeCompra.value = nuevoValor; // Sync slider
     } else if (campo === "cantidad") {
       const valor = numeroSeguroFromInput(cantidadInput);
-      actualizarInput(cantidadInput, valor + 1000);
+      const nuevoValor = valor + 1000;
+      actualizarInput(cantidadInput, nuevoValor);
+      rangePrestamo.value = nuevoValor; // Sync slider
     } else if (campo === "plazo") {
       const valor = numeroSeguroFromInput(plazoInput);
-      plazoInput.value = valor + 1;
+      const nuevoValor = valor + 1;
+      plazoInput.value = nuevoValor;
+      rangePlazo.value = nuevoValor; // Sync slider
     } else if (campo === "interes") {
       const valor = parseFloat(interesInput.value.replace(",", "."));
-      interesInput.value = (valor + 0.1).toFixed(1);
+      const nuevoValor = (valor + 0.05).toFixed(2);
+      interesInput.value = nuevoValor;
+      rangeInteres.value = nuevoValor; // Sync slider
     }
-    // Recalcular % dinámico
+    
     if (campo === "cantidadCompra" || campo === "cantidad") {
       calcularPorcentajeFinanciacion();
     }
@@ -158,18 +210,26 @@ document.addEventListener("DOMContentLoaded", () => {
   function decrementar(campo) {
     if (campo === "cantidadCompra") {
       const valor = numeroSeguroFromInput(cantidadCompraInput);
-      actualizarInput(cantidadCompraInput, Math.max(0, valor - 1000));
+      const nuevoValor = Math.max(0, valor - 1000);
+      actualizarInput(cantidadCompraInput, nuevoValor);
+      rangeCompra.value = nuevoValor; // Sync slider
     } else if (campo === "cantidad") {
       const valor = numeroSeguroFromInput(cantidadInput);
-      actualizarInput(cantidadInput, Math.max(0, valor - 1000));
+      const nuevoValor = Math.max(0, valor - 1000);
+      actualizarInput(cantidadInput, nuevoValor);
+      rangePrestamo.value = nuevoValor; // Sync slider
     } else if (campo === "plazo") {
       const valor = numeroSeguroFromInput(plazoInput);
-      plazoInput.value = Math.max(1, valor - 1);
+      const nuevoValor = Math.max(1, valor - 1);
+      plazoInput.value = nuevoValor;
+      rangePlazo.value = nuevoValor; // Sync slider
     } else if (campo === "interes") {
       const valor = parseFloat(interesInput.value.replace(",", "."));
-      interesInput.value = Math.max(0, valor - 0.1).toFixed(1);
+      const nuevoValor = Math.max(0, valor - 0.05).toFixed(2);
+      interesInput.value = nuevoValor;
+      rangeInteres.value = nuevoValor; // Sync slider
     }
-    // Recalcular % dinámico
+    
     if (campo === "cantidadCompra" || campo === "cantidad") {
       calcularPorcentajeFinanciacion();
     }
@@ -231,7 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return cuota;
   }
 
-  // --- NUEVA: Cálculo dinámico de Total de Gastos ---
+  // --- Cálculo dinámico de Total de Gastos ---
   function actualizarTotalGastos() {
     const seguroVida = numeroSeguroFromInput(seguroVidaInput);
     const gastoGestoria = 500;
@@ -243,12 +303,12 @@ document.addEventListener("DOMContentLoaded", () => {
     gastoTotalEl.textContent = formatearEuros(totalGastos);
   }
 
-  // --- Cálculo de Gastos (Modificado) ---
+  // --- Cálculo de Gastos ---
   function calcularGastos() {
     const compra = numeroSeguroFromInput(cantidadCompraInput);
     if (compra <= 0) {
       alert("Por favor, introduce una 'Cantidad de compra' válida.");
-      return false; // Devuelve false si falla
+      return false; 
     }
     
     const itpPorcentaje = parseFloat(tipoITPSelect.value);
@@ -274,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Llamar a la función que calcula el total
     actualizarTotalGastos(); 
-    return true; // Devuelve true si tiene éxito
+    return true; 
   }
 
 
@@ -373,17 +433,23 @@ document.addEventListener("DOMContentLoaded", () => {
     )} € de cuota) / ${formatearMiles(ingresos)} € de ingresos`;
   }
 
-  // --- Limpiar todo (Actualizado) ---
+  // --- Limpiar todo ---
   function limpiarTodo() {
     cantidadCompraInput.value = "100000";
     cantidadInput.value = "80000";
     plazoInput.value = "5";
-    interesInput.value = "3.5";
+    interesInput.value = "3.50";
     tipoPlazoSelect.value = "años";
     tipoITPSelect.value = "3.5";
     ingresosInput.value = "";
     deudasInput.value = "";
     seguroVidaInput.value = "";
+    
+    // Resetear sliders
+    rangeCompra.value = 100000;
+    rangePrestamo.value = 80000;
+    rangePlazo.value = 5;
+    rangeInteres.value = 3.5;
 
     resultadosSection.classList.remove("visible");
     resultadosSection.setAttribute("aria-hidden", "true");
@@ -409,22 +475,57 @@ document.addEventListener("DOMContentLoaded", () => {
     calcularPorcentajeFinanciacion();
   }
 
-  // --- Formateo automático de inputs (Actualizado) ---
-  [cantidadCompraInput, cantidadInput, ingresosInput, deudasInput, seguroVidaInput].forEach((input) => {
+  // --- Formateo automático de inputs ---
+  // También sincronizamos con el slider aquí
+  
+  cantidadCompraInput.addEventListener("input", () => {
+    actualizarInput(cantidadCompraInput, cantidadCompraInput.value);
+    syncSliderToInput(rangeCompra, cantidadCompraInput);
+    calcularPorcentajeFinanciacion();
+  });
+  
+  cantidadInput.addEventListener("input", () => {
+    actualizarInput(cantidadInput, cantidadInput.value);
+    syncSliderToInput(rangePrestamo, cantidadInput);
+    calcularPorcentajeFinanciacion();
+  });
+  
+  plazoInput.addEventListener("input", () => {
+    // El plazo no lleva miles, solo validación
+    syncSliderToInput(rangePlazo, plazoInput);
+  });
+  
+  interesInput.addEventListener("input", () => {
+      // El interes no lleva miles
+      syncSliderToInput(rangeInteres, interesInput);
+  });
+
+  [ingresosInput, deudasInput, seguroVidaInput].forEach((input) => {
     input.addEventListener("input", () => {
       actualizarInput(input, input.value);
     });
   });
   
-  // Eventos para % dinámico
-  cantidadCompraInput.addEventListener("input", calcularPorcentajeFinanciacion);
-  cantidadInput.addEventListener("input", calcularPorcentajeFinanciacion);
+  // --- Eventos de los SLIDERS (NUEVO) ---
+  rangeCompra.addEventListener("input", () => {
+      syncInputToSlider(cantidadCompraInput, rangeCompra);
+  });
+  rangePrestamo.addEventListener("input", () => {
+      syncInputToSlider(cantidadInput, rangePrestamo);
+  });
+  rangePlazo.addEventListener("input", () => {
+      plazoInput.value = rangePlazo.value;
+  });
+  rangeInteres.addEventListener("input", () => {
+      interesInput.value = parseFloat(rangeInteres.value).toFixed(2);
+  });
 
-  // NUEVO: Evento para total de gastos dinámico
+
+  // Evento para total de gastos dinámico
   seguroVidaInput.addEventListener("input", actualizarTotalGastos);
 
 
-  // --- Eventos de botones + / - (Actualizado) ---
+  // --- Eventos de botones + / - ---
   cantidadCompraMas.addEventListener("click", () => incrementar("cantidadCompra"));
   cantidadCompraMenos.addEventListener("click", () => decrementar("cantidadCompra"));
   cantidadMas.addEventListener("click", () => incrementar("cantidad"));
@@ -434,7 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
   interesMas.addEventListener("click", () => incrementar("interes"));
   interesMenos.addEventListener("click", () => decrementar("interes"));
 
-  // --- Calcular / Limpiar (Actualizado) ---
+  // --- Calcular / Limpiar ---
   calcularBtn.addEventListener("click", () => {
     const cuota = calcularPrestamo();
     if (cuota !== null) {
@@ -446,4 +547,36 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   limpiarBtn.addEventListener("click", limpiarTodo);
+
+  // --- SEGURIDAD BÁSICA (Bloqueo de click derecho e inspector) ---
+
+  // 1. Bloquear el click derecho
+  document.addEventListener('contextmenu', function(event) {
+    event.preventDefault();
+  });
+
+  // 2. Bloquear atajos de teclado comunes para inspeccionar
+  document.addEventListener('keydown', function(event) {
+    // F12
+    if (event.key === 'F12') {
+      event.preventDefault();
+    }
+    // Ctrl+Shift+I (Inspector)
+    if (event.ctrlKey && event.shiftKey && event.key === 'I') {
+      event.preventDefault();
+    }
+    // Ctrl+Shift+J (Consola)
+    if (event.ctrlKey && event.shiftKey && event.key === 'J') {
+      event.preventDefault();
+    }
+    // Ctrl+Shift+C (Seleccionar elemento)
+    if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+      event.preventDefault();
+    }
+    // Ctrl+U (Ver código fuente)
+    if (event.ctrlKey && event.key === 'u') {
+      event.preventDefault();
+    }
+  });
+
 });

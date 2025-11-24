@@ -45,6 +45,7 @@
               <input id="cantidadCompra" type="text" inputmode="decimal" class="input field-input" />
               <button type="button" id="cantidadCompraMas" class="btn btn-outline btn-square">+</button>
             </div>
+            <input type="range" id="rangeCompra" class="range-input" min="0" max="1000000" step="1000" />
           </div>
 
           <div class="field">
@@ -60,25 +61,26 @@
               <input id="cantidad" type="text" inputmode="decimal" class="input field-input" />
               <button type="button" id="cantidadMas" class="btn btn-outline btn-square">+</button>
             </div>
+            <input type="range" id="rangePrestamo" class="range-input" min="0" max="1000000" step="1000" />
           </div>
 
           <div class="field">
             <label for="plazo" class="field-label">Plazo</label>
             <p class="field-help">¿En cuánto tiempo quieres devolverlo?</p>
 
-            <div class="field-row field-row-plazo">
-              <button type="button" id="plazoMenos" class="btn btn-outline btn-square">&minus;</button>
-              <input id="plazo" type="text" inputmode="decimal" class="input field-input" />
-              <button type="button" id="plazoMas" class="btn btn-outline btn-square">+</button>
-            </div>
-
-            <div class="select-wrapper-movil">
-              <select id="tipoPlazo" class="select">
+            <div class="select-wrapper-top">
+               <select id="tipoPlazo" class="select select-full-width">
                 <option value="años">Años</option>
                 <option value="meses">Meses</option>
               </select>
             </div>
 
+            <div class="field-row field-row-plazo">
+              <button type="button" id="plazoMenos" class="btn btn-outline btn-square">&minus;</button>
+              <input id="plazo" type="text" inputmode="decimal" class="input field-input" />
+              <button type="button" id="plazoMas" class="btn btn-outline btn-square">+</button>
+            </div>
+            <input type="range" id="rangePlazo" class="range-input" min="1" max="40" step="1" />
           </div>
 
           <div class="field">
@@ -89,6 +91,7 @@
               <input id="interes" type="text" inputmode="decimal" class="input field-input" />
               <button type="button" id="interesMas" class="btn btn-outline btn-square">+</button>
             </div>
+            <input type="range" id="rangeInteres" class="range-input" min="0" max="20" step="0.05" />
           </div>
 
           <div class="field">

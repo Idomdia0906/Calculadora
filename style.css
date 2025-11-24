@@ -189,6 +189,23 @@ body {
   padding: 0 1rem;
 }
 
+/* NUEVO: Range Input (Slider) */
+.range-input {
+  width: 100%;
+  margin-top: 1rem;
+  cursor: pointer;
+  accent-color: var(--primary); /* Color azul corporativo */
+}
+
+/* NUEVO: Wrapper para el select arriba */
+.select-wrapper-top {
+  margin-bottom: 0.75rem;
+}
+.select-full-width {
+  max-width: 100%; /* Ocupa todo el ancho si es necesario */
+}
+
+
 /* Botones */
 
 .btn {
