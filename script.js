@@ -1,5 +1,5 @@
 // --- CALCULADORA DE PRÉSTAMOS by Ignacio Dominguez Diaz--- //
-// --- Refactorizado por Gemini --- //
+// --- Refactorizado por Gemini (Versión corrección NaN/Input) --- //
 
 document.addEventListener("DOMContentLoaded", () => {
   // --- Referencias a elementos del DOM ---
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const completaCard = document.getElementById("tasaCompletaCard");
   const explicacionTasaCompleta = document.getElementById("explicacionTasaCompleta");
 
-  // -- Historial (NUEVO)
+  // -- Historial
   const historialCard = document.getElementById("historialCard");
   const listaHistorial = document.getElementById("listaHistorial");
   const borrarHistorialBtn = document.getElementById("borrarHistorialBtn");
@@ -88,8 +88,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let timeoutInicio = null;
 
   // --- Valores iniciales ---
-  cantidadCompraInput.value = "100000";
-  cantidadInput.value = "80000";
+  // IMPORTANTE: Establecemos valores formateados inicialmente
+  cantidadCompraInput.value = "100.000";
+  cantidadInput.value = "80.000";
   plazoInput.value = "5";
   interesInput.value = "3.50"; 
   tipoPlazoSelect.value = "años";
@@ -110,10 +111,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (completaCard) completaCard.style.display = "none";
   if (historialCard) {
       historialCard.style.display = "none";
-      cargarHistorial(); // Cargar si existe al inicio
+      cargarHistorial(); 
   }
 
-  // --- Helpers ---
+  // --- Helpers de Formato ---
   function formatearEuros(valor) {
     if (isNaN(valor) || valor === null) return "0,00 €";
     return (
@@ -123,30 +124,43 @@ document.addEventListener("DOMContentLoaded", () => {
         .replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " €"
     );
   }
+  
+  // Pone los puntos de miles (ej: 1000 -> 1.000)
   function formatearMiles(numero) {
+    if (isNaN(numero)) return "";
     return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
+  // Limpia el input para obtener un número JS válido
   function limpiarNumero(str) {
     if (!str) return 0;
-    return parseFloat(str.toString().replace(/[^\d.]/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+    // Elimina todo lo que no sea número, punto o coma
+    // Reemplaza puntos de miles por nada y comas decimales por puntos
+    let limpio = str.toString().replace(/\./g, "").replace(",", ".");
+    return parseFloat(limpio) || 0;
   }
   
+  // Versión específica para enteros (sin decimales)
   function limpiarNumeroEntero(str) {
       if (!str) return 0;
+      // Elimina todo lo que no sea dígito
       return parseInt(str.toString().replace(/[^\d]/g, "")) || 0;
   }
 
+  // Obtiene el número real del input, da igual si tiene puntos o no
   function numeroSeguroFromInput(inputEl) {
     if (inputEl.id === 'interes') {
-        return parseFloat(inputEl.value.replace(",", ".")) || 0;
+        // Interés permite decimales
+        let val = inputEl.value.toString().replace(/\./g, "").replace(",", ".");
+        return parseFloat(val) || 0;
     }
     return limpiarNumeroEntero(inputEl.value);
   }
 
-  function actualizarInput(input, valor) {
+  // Función para establecer valor en input (usada por botones/sliders)
+  function actualizarInputDesdeSistema(input, valor) {
     if (input.id === 'interes') {
-        input.value = parseFloat(valor).toFixed(2);
+        input.value = parseFloat(valor).toFixed(2); // Interés siempre con 2 decimales
     } else {
         const numeroLimpio = parseInt(valor);
         input.value = formatearMiles(numeroLimpio);
@@ -166,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const porcentaje = (prestamo / compra) * 100;
     porcentajeFinanciacionEl.textContent = `${porcentaje.toFixed(1)} %`;
   }
+  // Calcular al inicio
   calcularPorcentajeFinanciacion();
 
   // --- Sincronización Slider <-> Input ---
@@ -176,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   function syncInputToSlider(input, slider) {
       const val = slider.value;
-      actualizarInput(input, val);
+      actualizarInputDesdeSistema(input, val);
       if (input.id === "cantidadCompra" || input.id === "cantidad") {
         calcularPorcentajeFinanciacion();
       }
@@ -187,12 +202,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (campo === "cantidadCompra") {
       const valor = numeroSeguroFromInput(cantidadCompraInput);
       const nuevoValor = valor + 1000;
-      actualizarInput(cantidadCompraInput, nuevoValor);
+      actualizarInputDesdeSistema(cantidadCompraInput, nuevoValor);
       rangeCompra.value = nuevoValor; 
     } else if (campo === "cantidad") {
       const valor = numeroSeguroFromInput(cantidadInput);
       const nuevoValor = valor + 1000;
-      actualizarInput(cantidadInput, nuevoValor);
+      actualizarInputDesdeSistema(cantidadInput, nuevoValor);
       rangePrestamo.value = nuevoValor; 
     } else if (campo === "plazo") {
       const valor = numeroSeguroFromInput(plazoInput);
@@ -200,9 +215,9 @@ document.addEventListener("DOMContentLoaded", () => {
       plazoInput.value = nuevoValor;
       rangePlazo.value = nuevoValor; 
     } else if (campo === "interes") {
-      const valor = parseFloat(interesInput.value.replace(",", "."));
+      const valor = numeroSeguroFromInput(interesInput);
       const nuevoValor = (valor + 0.05).toFixed(2);
-      interesInput.value = nuevoValor;
+      actualizarInputDesdeSistema(interesInput, nuevoValor);
       rangeInteres.value = nuevoValor; 
     }
     
@@ -215,12 +230,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (campo === "cantidadCompra") {
       const valor = numeroSeguroFromInput(cantidadCompraInput);
       const nuevoValor = Math.max(0, valor - 1000);
-      actualizarInput(cantidadCompraInput, nuevoValor);
+      actualizarInputDesdeSistema(cantidadCompraInput, nuevoValor);
       rangeCompra.value = nuevoValor; 
     } else if (campo === "cantidad") {
       const valor = numeroSeguroFromInput(cantidadInput);
       const nuevoValor = Math.max(0, valor - 1000);
-      actualizarInput(cantidadInput, nuevoValor);
+      actualizarInputDesdeSistema(cantidadInput, nuevoValor);
       rangePrestamo.value = nuevoValor; 
     } else if (campo === "plazo") {
       const valor = numeroSeguroFromInput(plazoInput);
@@ -228,9 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
       plazoInput.value = nuevoValor;
       rangePlazo.value = nuevoValor; 
     } else if (campo === "interes") {
-      const valor = parseFloat(interesInput.value.replace(",", "."));
+      const valor = numeroSeguroFromInput(interesInput);
       const nuevoValor = Math.max(0, valor - 0.05).toFixed(2);
-      interesInput.value = nuevoValor;
+      actualizarInputDesdeSistema(interesInput, nuevoValor);
       rangeInteres.value = nuevoValor; 
     }
     
@@ -264,10 +279,87 @@ document.addEventListener("DOMContentLoaded", () => {
     boton.addEventListener('touchcancel', detener);
   }
 
+  // --- MANEJO DE INPUTS (Focus/Blur/Input) ---
+  // Esta es la parte clave para evitar el error de los 4 dígitos y NaN
+
+  function configurarInput(input) {
+      // 1. Al escribir: SOLO calcular, NO formatear (evita bugs de cursor)
+      input.addEventListener('input', () => {
+          // Si es un campo con slider, sincronizar slider pero SIN formatear el input
+          if (input.id === "cantidadCompra") {
+              syncSliderToInput(rangeCompra, input);
+              calcularPorcentajeFinanciacion();
+          } else if (input.id === "cantidad") {
+              syncSliderToInput(rangePrestamo, input);
+              calcularPorcentajeFinanciacion();
+          } else if (input.id === "plazo") {
+              syncSliderToInput(rangePlazo, input);
+          } else if (input.id === "interes") {
+              syncSliderToInput(rangeInteres, input);
+          } else if (input.id === "seguroVidaInput") {
+              actualizarTotalGastos();
+          }
+      });
+
+      // 2. Al entrar (Focus): Quitar puntos para facilitar edición
+      input.addEventListener('focus', () => {
+          let valor = input.value;
+          // Si es numérico entero, quitar puntos
+          if (input.id !== 'interes') {
+             valor = valor.replace(/\./g, ""); 
+          }
+          // Si es 0, borrarlo para escribir fácil
+          if (valor === "0" || valor === "0,00") {
+             input.value = "";
+          } else {
+             input.value = valor;
+          }
+          // Seleccionar todo el texto
+          input.select();
+      });
+
+      // 3. Al salir (Blur): Poner puntos y formato bonito
+      input.addEventListener('blur', () => {
+          // Si está vacío, poner 0 o valor mínimo
+          if (input.value.trim() === "") {
+             if(input.id === 'plazo') input.value = "1";
+             else input.value = (input.id === 'interes') ? "0.00" : "0";
+          }
+          
+          // Aplicar formato
+          actualizarInputDesdeSistema(input, numeroSeguroFromInput(input));
+      });
+  }
+
+  // Configurar todos los inputs relevantes
+  [cantidadCompraInput, cantidadInput, plazoInput, interesInput, ingresosInput, deudasInput, seguroVidaInput].forEach(configurarInput);
+
+
+  // --- Eventos de los SLIDERS ---
+  rangeCompra.addEventListener("input", () => syncInputToSlider(cantidadCompraInput, rangeCompra));
+  rangePrestamo.addEventListener("input", () => syncInputToSlider(cantidadInput, rangePrestamo));
+  rangePlazo.addEventListener("input", () => {
+      plazoInput.value = rangePlazo.value;
+  });
+  rangeInteres.addEventListener("input", () => {
+      interesInput.value = parseFloat(rangeInteres.value).toFixed(2);
+  });
+
+  // Botones Press & Hold
+  agregarEventosContinuos(cantidadCompraMas, incrementar, "cantidadCompra");
+  agregarEventosContinuos(cantidadCompraMenos, decrementar, "cantidadCompra");
+  agregarEventosContinuos(cantidadMas, incrementar, "cantidad");
+  agregarEventosContinuos(cantidadMenos, decrementar, "cantidad");
+  agregarEventosContinuos(plazoMas, incrementar, "plazo");
+  agregarEventosContinuos(plazoMenos, decrementar, "plazo");
+  agregarEventosContinuos(interesMas, incrementar, "interes");
+  agregarEventosContinuos(interesMenos, decrementar, "interes");
+
+
   // --- Cálculo del préstamo ---
   function calcularPrestamo() {
     const P = numeroSeguroFromInput(cantidadInput);
-    const tasaAnual = parseFloat(interesInput.value.replace(",", "."));
+    const tasaAnual = numeroSeguroFromInput(interesInput);
     const plazoValor = parseInt(plazoInput.value.replace(/[^\d]/g, "")) || 0;
     const tipoPlazo = tipoPlazoSelect.value;
 
@@ -275,6 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Por favor, introduce una cantidad válida.");
       return null;
     }
+    // Permitir interés 0
     if (isNaN(tasaAnual) || tasaAnual < 0) {
       alert("Por favor, introduce un interés válido.");
       return null;
@@ -325,6 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const gastoGestoria = 500;
     const gastoTasacion = 500;
     const gastoHogar = 200;
+    
     const totalGastos = gITP + gNotaria + gRegistro + gastoGestoria + gastoTasacion + gastoHogar + seguroVida;
     gastoTotalEl.textContent = formatearEuros(totalGastos);
     return totalGastos;
@@ -338,6 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return false; 
     }
     const itpPorcentaje = parseFloat(tipoITPSelect.value);
+    
     gITP = compra * (itpPorcentaje / 100);
     gNotaria = compra * 0.01; 
     gRegistro = gNotaria * 0.8; 
@@ -406,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tasaCompletaEl.textContent = "0 %";
       textoRiesgoEl.textContent = "";
       explicacionTasaCompleta.textContent = "";
-      return 0; // Return 0 for logs
+      return 0; 
     }
 
     let tasaFinal = 0;
@@ -436,15 +531,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return tasaFinal;
   }
 
-  // --- HISTORIAL (Lógica Nueva) ---
+  // --- HISTORIAL ---
   function guardarEnHistorial(datos) {
-      // 1. Obtener historial existente
       let historial = JSON.parse(localStorage.getItem('historialPrestamos')) || [];
-      
-      // 2. Añadir nuevo al principio
       const ahora = new Date();
       const horaFormateada = ahora.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      
       const nuevoRegistro = {
           hora: horaFormateada,
           compra: datos.compra,
@@ -452,32 +543,22 @@ document.addEventListener("DOMContentLoaded", () => {
           cuota: datos.cuota,
           tasa: datos.tasa
       };
-      
       historial.unshift(nuevoRegistro);
-      
-      // 3. Limitar a 5 últimos
       if (historial.length > 5) {
           historial.pop();
       }
-      
-      // 4. Guardar
       localStorage.setItem('historialPrestamos', JSON.stringify(historial));
-      
-      // 5. Renderizar
       renderizarHistorial();
   }
 
   function renderizarHistorial() {
       const historial = JSON.parse(localStorage.getItem('historialPrestamos')) || [];
-      
       if (historial.length === 0) {
           historialCard.style.display = "none";
           return;
       }
-      
       historialCard.style.display = "block";
       listaHistorial.innerHTML = "";
-      
       historial.forEach(item => {
           const div = document.createElement('div');
           div.className = 'historial-item';
@@ -501,62 +582,18 @@ document.addEventListener("DOMContentLoaded", () => {
       renderizarHistorial();
   }
 
-  // Wrapper para cargar historial al inicio si hay datos
   function cargarHistorial() {
       renderizarHistorial();
   }
 
-
-  // --- Listeners de Input y Sliders ---
-  cantidadCompraInput.addEventListener("input", () => {
-    actualizarInput(cantidadCompraInput, cantidadCompraInput.value);
-    syncSliderToInput(rangeCompra, cantidadCompraInput);
-    calcularPorcentajeFinanciacion();
-  });
-  
-  cantidadInput.addEventListener("input", () => {
-    actualizarInput(cantidadInput, cantidadInput.value);
-    syncSliderToInput(rangePrestamo, cantidadInput);
-    calcularPorcentajeFinanciacion();
-  });
-  
-  plazoInput.addEventListener("input", () => syncSliderToInput(rangePlazo, plazoInput));
-  interesInput.addEventListener("input", () => syncSliderToInput(rangeInteres, interesInput));
-
-  [ingresosInput, deudasInput, seguroVidaInput].forEach((input) => {
-    input.addEventListener("input", () => actualizarInput(input, input.value));
-  });
-  
-  rangeCompra.addEventListener("input", () => syncInputToSlider(cantidadCompraInput, rangeCompra));
-  rangePrestamo.addEventListener("input", () => syncInputToSlider(cantidadInput, rangePrestamo));
-  rangePlazo.addEventListener("input", () => {
-      plazoInput.value = rangePlazo.value;
-  });
-  rangeInteres.addEventListener("input", () => {
-      interesInput.value = parseFloat(rangeInteres.value).toFixed(2);
-  });
-
-  seguroVidaInput.addEventListener("input", actualizarTotalGastos);
-  
-  // Botones Press & Hold
-  agregarEventosContinuos(cantidadCompraMas, incrementar, "cantidadCompra");
-  agregarEventosContinuos(cantidadCompraMenos, decrementar, "cantidadCompra");
-  agregarEventosContinuos(cantidadMas, incrementar, "cantidad");
-  agregarEventosContinuos(cantidadMenos, decrementar, "cantidad");
-  agregarEventosContinuos(plazoMas, incrementar, "plazo");
-  agregarEventosContinuos(plazoMenos, decrementar, "plazo");
-  agregarEventosContinuos(interesMas, incrementar, "interes");
-  agregarEventosContinuos(interesMenos, decrementar, "interes");
-
   // --- Calcular / Limpiar ---
   calcularBtn.addEventListener("click", () => {
-    const resultadoPrestamo = calcularPrestamo(); // Ahora devuelve objeto
+    const resultadoPrestamo = calcularPrestamo(); 
     if (resultadoPrestamo) {
       const gastosOk = calcularGastos(); 
       if (gastosOk) {
         const tasa = calcularTasaEsfuerzo(resultadoPrestamo.cuota); 
         
-        // GUARDAR EN HISTORIAL
         guardarEnHistorial({
             compra: formatearMiles(numeroSeguroFromInput(cantidadCompraInput)) + " €",
             prestamo: formatearMiles(numeroSeguroFromInput(cantidadInput)) + " €",
