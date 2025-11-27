@@ -1,5 +1,5 @@
 // --- CALCULADORA DE PRÉSTAMOS by Ignacio Dominguez Diaz--- //
-// --- Refactorizado por Gemini (Versión corrección NaN/Input) --- //
+// --- Refactorizado por Gemini (Versión corrección Bug Interés 350%) --- //
 
 document.addEventListener("DOMContentLoaded", () => {
   // --- Referencias a elementos del DOM ---
@@ -88,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let timeoutInicio = null;
 
   // --- Valores iniciales ---
-  // IMPORTANTE: Establecemos valores formateados inicialmente
   cantidadCompraInput.value = "100.000";
   cantidadInput.value = "80.000";
   plazoInput.value = "5";
@@ -125,42 +124,34 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
   
-  // Pone los puntos de miles (ej: 1000 -> 1.000)
   function formatearMiles(numero) {
     if (isNaN(numero)) return "";
     return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
-  // Limpia el input para obtener un número JS válido
-  function limpiarNumero(str) {
-    if (!str) return 0;
-    // Elimina todo lo que no sea número, punto o coma
-    // Reemplaza puntos de miles por nada y comas decimales por puntos
-    let limpio = str.toString().replace(/\./g, "").replace(",", ".");
-    return parseFloat(limpio) || 0;
-  }
-  
-  // Versión específica para enteros (sin decimales)
+  // Limpia el input para obtener un número JS válido (para importes grandes)
   function limpiarNumeroEntero(str) {
       if (!str) return 0;
-      // Elimina todo lo que no sea dígito
       return parseInt(str.toString().replace(/[^\d]/g, "")) || 0;
   }
 
-  // Obtiene el número real del input, da igual si tiene puntos o no
+  // >>> AQUÍ ESTABA EL ERROR <<<
+  // Ahora tratamos el Interés de forma especial para no borrarle el punto decimal
   function numeroSeguroFromInput(inputEl) {
     if (inputEl.id === 'interes') {
-        // Interés permite decimales
-        let val = inputEl.value.toString().replace(/\./g, "").replace(",", ".");
+        // Para el interés, aceptamos tanto punto como coma como decimal
+        // Y NO borramos los puntos, solo reemplazamos coma por punto
+        let val = inputEl.value.toString().replace(",", ".");
         return parseFloat(val) || 0;
     }
+    // Para el resto (dinero), el punto es miles y se ignora
     return limpiarNumeroEntero(inputEl.value);
   }
 
-  // Función para establecer valor en input (usada por botones/sliders)
+  // Función para establecer valor en input
   function actualizarInputDesdeSistema(input, valor) {
     if (input.id === 'interes') {
-        input.value = parseFloat(valor).toFixed(2); // Interés siempre con 2 decimales
+        input.value = parseFloat(valor).toFixed(2); 
     } else {
         const numeroLimpio = parseInt(valor);
         input.value = formatearMiles(numeroLimpio);
@@ -280,12 +271,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- MANEJO DE INPUTS (Focus/Blur/Input) ---
-  // Esta es la parte clave para evitar el error de los 4 dígitos y NaN
-
   function configurarInput(input) {
-      // 1. Al escribir: SOLO calcular, NO formatear (evita bugs de cursor)
       input.addEventListener('input', () => {
-          // Si es un campo con slider, sincronizar slider pero SIN formatear el input
           if (input.id === "cantidadCompra") {
               syncSliderToInput(rangeCompra, input);
               calcularPorcentajeFinanciacion();
@@ -301,37 +288,29 @@ document.addEventListener("DOMContentLoaded", () => {
           }
       });
 
-      // 2. Al entrar (Focus): Quitar puntos para facilitar edición
       input.addEventListener('focus', () => {
           let valor = input.value;
-          // Si es numérico entero, quitar puntos
+          // Solo quitamos puntos si NO es el interés
           if (input.id !== 'interes') {
              valor = valor.replace(/\./g, ""); 
           }
-          // Si es 0, borrarlo para escribir fácil
-          if (valor === "0" || valor === "0,00") {
+          if (valor === "0" || valor === "0,00" || valor === "0.00") {
              input.value = "";
           } else {
              input.value = valor;
           }
-          // Seleccionar todo el texto
           input.select();
       });
 
-      // 3. Al salir (Blur): Poner puntos y formato bonito
       input.addEventListener('blur', () => {
-          // Si está vacío, poner 0 o valor mínimo
           if (input.value.trim() === "") {
              if(input.id === 'plazo') input.value = "1";
              else input.value = (input.id === 'interes') ? "0.00" : "0";
           }
-          
-          // Aplicar formato
           actualizarInputDesdeSistema(input, numeroSeguroFromInput(input));
       });
   }
 
-  // Configurar todos los inputs relevantes
   [cantidadCompraInput, cantidadInput, plazoInput, interesInput, ingresosInput, deudasInput, seguroVidaInput].forEach(configurarInput);
 
 
